@@ -2,7 +2,7 @@ import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
 import { SimModel } from "../model/SimModel.js";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import { Rectangle, Text, Circle, Color, HBox, RichText, VBox, Display, Node, DOM } from "scenerystack/scenery";
-import { Panel, Range, HSlider, DerivedProperty, Vector2, RectangularToggleButton, Property, RoundToggleButton, ComboBox, VerticalAquaRadioButtonGroup } from "scenerystack";
+import { Panel, Range, HSlider, DerivedProperty, Vector2, RectangularToggleButton, Property, RoundToggleButton, ComboBox, VerticalAquaRadioButtonGroup, CarouselComboBox } from "scenerystack";
 import EquationInput from './EquationInput.js';
 import { verifyEq } from '../../common/verifyEq.js';
 import { drawV_X, drawV_Y, drawX, drawY } from '../../common/makeGraphs.js';
@@ -71,12 +71,41 @@ export class SimScreenView extends ScreenView {
   rectangle: import("c:/Users/Sadra/Desktop/phetsims/chipper/node_modules/@types/three/index").Mesh<import("c:/Users/Sadra/Desktop/phetsims/chipper/node_modules/@types/three/index").PlaneGeometry, import("c:/Users/Sadra/Desktop/phetsims/chipper/node_modules/@types/three/index").MeshBasicMaterial>;
   cannonDistance: number;
   graphBox: Panel;
+  selectedRunProperty: Property<string>;
+  runHistory: Array<{
+    gravity: number;
+    kl: number;
+    kq: number;
+    v: number;
+    angle: number;
+    y: number;
+    v_x: number;
+    v_y: number;
+    xdotLatex: string;
+    ydotLatex: string;
+    v_xdotLatex: string;
+    v_ydotLatex: string;
+    xEQ: string;
+    yEQ: string;
+    v_xEQ: string;
+    v_yEQ: string;
+    dragType: "linear" | "quadratic";
+  }>;
+  updateComboBox: (runs: { name: string; index: number; }[] | string[]) => void;
+  xdotField: any;
+  ydotField: any;
+  v_xdotField: any;
+  v_ydotField: any;
+  xdotLatex: any;
+  ydotLatex: any;
+  v_xdotLatex: any;
+  v_ydotLatex: any;
 
 
 
   public constructor(model: SimModel, options?: ScreenViewOptions) {
     super(options);
-
+    this.runHistory = []; // Initialize run history
     const resetAllButton = new ResetAllButton({
       listener: () => {
         this.interruptSubtreeInput(); // cancel interactions that may be in progress
@@ -249,7 +278,7 @@ export class SimScreenView extends ScreenView {
     const massSlider = new HSlider(model.massProp, new Range(0, 10));
     const mass = new RichText("m");
     const gravity = new RichText("gravity (<em>g</em>)", { scale: 1 });
-    const kl = new RichText("lin. drag coeff. (<em>k<sub>l</sub></em>)", { scale: 1});
+    const kl = new RichText("lin. drag coeff. (<em>k<sub>l</sub></em>)", { scale: 1 });
     const kq = new RichText("quad. drag coeff. (<em>k<sub>q</sub></em>)", { scale: 1 });
     const v_x = new RichText("init. vel. (<em>v<sub>0x</sub></em>)", { scale: 1 });
     const v_y = new RichText("init. vel. (<em>v<sub>0y</sub></em>)", { scale: 1 });
@@ -304,9 +333,9 @@ export class SimScreenView extends ScreenView {
         new Rectangle(0, 0, 0, 10),
         // new HSlider(model.kProp, new Range(0, .3)),
         // new Rectangle(0, 0, 0, 10),
-        new HSlider(model.klProp, new Range(0, 10)),
+        new HSlider(model.klProp, new Range(0, .3)),
         new Rectangle(0, 0, 0, 10),
-        new HSlider(model.kqProp, new Range(0, 10)),
+        new HSlider(model.kqProp, new Range(0, .3)),
         new Rectangle(0, 0, 0, 10),
         new HSlider(model.vProp, new Range(10, 50)),
         new Rectangle(0, 0, 0, 10),
@@ -338,7 +367,7 @@ export class SimScreenView extends ScreenView {
         // new HSlider(model.angleProp, new Range(0, 90)),
       ]
     })
-    var toggleRadius = 13;
+    const toggleRadius = 13;
     const buttonVBoxConstants = new VBox({
       children: [
         new Rectangle(0, 0, 20, 0),
@@ -488,7 +517,7 @@ export class SimScreenView extends ScreenView {
     const speedPanel = new Panel(new VBox({
       align: "center", children: [new RichText("Components"), new Rectangle(0, 0, 350, 15), new HBox({
         align: "center", children: [
-          
+
           speedConstantNames,
           new Rectangle(0, 0, 10, 0),
           speedConstantSliders,
@@ -532,6 +561,8 @@ export class SimScreenView extends ScreenView {
 
     );
 
+    this.xdotField = xdotField;
+
     console.log(`This is graph data -> `)
     this.model.graphData.data.map(e => console.log(e.x))
     console.log(`This is graph data <- `)
@@ -553,6 +584,8 @@ export class SimScreenView extends ScreenView {
 
     );
 
+    this.ydotField = ydotField;
+
     const v_xdotField = new EquationInput(v_xdotDOM,
       {
         initialText: model.v_xEQ,
@@ -569,6 +602,8 @@ export class SimScreenView extends ScreenView {
 
     );
 
+    this.v_xdotField = v_xdotField;
+
     const v_ydotField = new EquationInput(v_ydotDOM,
       {
         initialText: model.v_yEQ,
@@ -584,6 +619,8 @@ export class SimScreenView extends ScreenView {
       }
 
     );
+
+    this.v_ydotField = v_ydotField;
     this.focusedEq = [model.xEQ, xdotField, xdotField.writeToEquation];
     const focusedEq = [this.focusedEq]
     const xdotBox = new HBox({ preferredWidth: 30, children: [xdotField] })
@@ -1056,8 +1093,8 @@ export class SimScreenView extends ScreenView {
 
     buttonMass.lazyLink(() => { model.massProp.value = Number(window.prompt("Enter value for mass:")); reset(); })
     buttonGravity.lazyLink(() => { model.gravityProp.value = Number(window.prompt("Enter value for gravity:")); reset(); })
-    buttonFrictionl.lazyLink(() => { model.kProp.value = Number(window.prompt("Enter value for friction:")); reset(); })
-    buttonFrictionq.lazyLink(() => { model.kProp.value = Number(window.prompt("Enter value for friction:")); reset(); })
+    buttonFrictionl.lazyLink(() => { model.klProp.value = Number(window.prompt("Enter value for friction:")); reset(); })
+    buttonFrictionq.lazyLink(() => { model.kqProp.value = Number(window.prompt("Enter value for friction:")); reset(); })
     buttonSpeed.lazyLink(() => { model.vProp.value = Number(window.prompt("Enter value for speed:")); reset(); })
     buttonDegree.lazyLink(() => { model.angleProp.value = Number(window.prompt("Enter value for theta in degrees:")); reset(); })
     buttonV_x.lazyLink(() => { model.v_xProp.value = Number(window.prompt("Enter value for v_x in meter per second:")); reset(); })
@@ -1077,7 +1114,6 @@ export class SimScreenView extends ScreenView {
 
 
 
-    
 
 
 
@@ -1085,7 +1121,118 @@ export class SimScreenView extends ScreenView {
 
 
 
-    let reset = (action = "") => {
+
+
+
+
+    this.selectedRunProperty = new Property('History'); // This will persist even after rebuilding
+
+    const listParent = new Node(); // Parent for the combo box
+    let currentComboBox: Node | null = null; // To keep track of the current combo box
+
+    function updateComboBox(this: SimScreenView, runs: Array<{ name: string; index: number }> | string[]) {
+      if (currentComboBox) {
+        listParent.removeChild(currentComboBox);
+        currentComboBox.dispose();
+      }
+
+      // Support both array of objects and array of strings for runs
+      const items = [
+        {
+          value: 'History',
+          createNode: () => new Text('History'),
+          accessibleName: 'History run'
+        },
+        ...(Array.isArray(runs) && typeof runs[0] === 'object'
+          ? (runs as Array<{ name: string; index: number }>).map(run => ({
+            value: `Run ${run.index + 1}`,
+            createNode: () => new Text(`Run ${run.index + 1}`),
+            accessibleName: `Run ${run.index + 1}`
+          }))
+          : (runs as string[]).map((run, idx) => ({
+            value: run,
+            createNode: () => new Text(run),
+            accessibleName: run
+          }))
+        )
+      ];
+
+
+      currentComboBox = new CarouselComboBox<string>(
+        this.selectedRunProperty,
+        items,
+        {
+          scale: 1.3
+        }
+
+      );
+
+
+      listParent.addChild(currentComboBox);
+
+    }
+
+
+    this.addChild(listParent);
+    this.updateComboBox = updateComboBox.bind(this);
+    this.updateComboBox([]);
+
+
+    this.selectedRunProperty.link(selected => {
+      if (selected.startsWith('Run ')) {
+        const index = parseInt(selected.replace('Run ', '')) - 1;
+        const run = this.runHistory[index];
+        if (run) {
+          this.model.gravityProp.value = run.gravity;
+          this.model.klProp.value = run.kl;
+          this.model.kqProp.value = run.kq;
+          this.model.vProp.value = run.v;
+          this.model.angleProp.value = run.angle;
+          this.model.yProp.value = run.y;
+          this.model.v_xProp.value = run.v_x;
+          this.model.v_yProp.value = run.v_y;
+
+          this.xdotLatex = run.xdotLatex;
+          this.ydotLatex = run.ydotLatex;
+          this.v_xdotLatex = run.v_xdotLatex;
+          this.v_ydotLatex = run.v_ydotLatex;
+
+          this.model.xEQ = run.xEQ;
+          this.model.yEQ = run.yEQ;
+          this.model.v_xEQ = run.v_xEQ;
+          this.model.v_yEQ = run.v_yEQ;
+
+          // this.restoreRun();  // Add this method next
+          // this.restoringRun = true;
+          dragTypeProperty.value = run.dragType === "quadratic" ? DragType.QUADRATIC : DragType.LINEAR;
+          this.restoreRun()
+          // this.reset();  // Add this method next
+
+
+        }
+      }
+    });
+
+    listParent.leftTop = new Vector2(constantPanel.rightCenter.x + 20, constantPanel.leftTop.y + 10);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const reset = (action = "") => {
       console.log("Reset called")
 
 
@@ -1100,7 +1247,7 @@ export class SimScreenView extends ScreenView {
 
       this.spacePressed = false;
       model.reset(action)
-      this.reset()
+      this.reset(action)
       vx = model.v_x
       vy = model.v_y;
 
@@ -1338,7 +1485,7 @@ export class SimScreenView extends ScreenView {
         new HBox({ children: [new Rectangle(0, 0, 0, 10)] }),
         new HBox({ align: "center", children: [new RichText("<em>v&#x307;<sub>y</sub>=</em>  "), v_ydotBox] }),
       ]
-    }), { fill: new Color("#d3d3d3"), scale: 0.77})
+    }), { fill: new Color("#d3d3d3"), scale: 0.77 })
     this.addChild(testEquationPanel)
 
 
@@ -1702,12 +1849,266 @@ export class SimScreenView extends ScreenView {
     //   bottom: this.layoutBounds.maxY - 10,
     // });
     // this.addChild(resetAllButton);
+
+
+
+
+
+
+
+
+
   }
 
-  public reset(): void {
-    // this.spacePressed = false;
+
+
+
+
+
+
+  public restoreRun(): void {
+    // Reset simulation without saving to history
+    // this.pause = true
+
+    this.model.gravity = this.model.gravityProp.value;
+    this.model.kl = this.model.klProp.value;
+    this.model.kq = this.model.kqProp.value;
+    this.model.v = this.model.vProp.value;
+    this.model.angle = this.model.angleProp.value;
+    this.model.v_x = this.model.v_xProp.value;
+    this.model.v_y = this.model.v_yProp.value;
+    this.model.y = this.model.yProp.value;
+
+    this.xdotField.updateText(this.xdotLatex);
+    this.ydotField.updateText(this.ydotLatex);
+    this.v_xdotField.updateText(this.v_xdotLatex);
+    this.v_ydotField.updateText(this.v_ydotLatex);
+
+
+
+    // this.model.reset();
+    this.model.updateGraphs = false;
+    this.scene.remove(this.group);
+    this.group = new THREE.Group();
+    this.scene.add(this.group);
+    this.graphBox.detach()
+
+    this.refXdotGraph.detach();
+    this.refXdotGraph = drawV_X(this.model.graphData, this.model.graphLen, 'staticSim-xdot', 'reference', this.graphSize, this.model.graphDataTest, this.model.graphLenTest);
+    this.yScalevx = this.refXdotGraph.y
+    this.xScalevx = this.refXdotGraph.x
+    this.refXdotGraph.node.offsetWidth = 250
+    this.refXdotGraph.node.offsetHeight = 250
+    this.refXdotGraph = new DOM(this.refXdotGraph.node);
+    this.refXdotGraph._container.style.transformOrigin = 'left top 0px';
+    // this.addChild(this.refXdotGraph);
+
+
+    this.refYdotGraph.detach();
+    this.refYdotGraph = drawV_Y(this.model.graphData, this.model.graphLen, 'variableSim-ydot', 'test', this.graphSize, this.model.graphDataTest, this.model.graphLenTest);
+    this.yScalevy = this.refYdotGraph.y
+    this.xScalevy = this.refYdotGraph.x
+    this.refYdotGraph.node.offsetWidth = 250
+    this.refYdotGraph.node.offsetHeight = 250
+    this.refYdotGraph = new DOM(this.refYdotGraph.node);
+    this.refYdotGraph._container.style.transformOrigin = 'left top 0px';
+    // this.addChild(this.refYdotGraph);
+
+    this.refXGraph.detach();
+    this.refXGraph = drawX(this.model.graphData, this.model.graphLen, 'staticSim-x', 'reference', this.graphSize, this.model.graphDataTest, this.model.graphLenTest);
+    this.yScalex = this.refXGraph.y
+    this.xScalex = this.refXGraph.x
+    this.refXGraph.node.offsetWidth = 250
+    this.refXGraph.node.offsetHeight = 250
+    this.refXGraph = new DOM(this.refXGraph.node);
+    this.refXGraph._container.style.transformOrigin = 'left top 0px';
+    // this.addChild(this.refXGraph);
+    // this.rootNode.addChild(this.refXGraph);
+    // this.addChild(this.refXGraph);
+
+    this.refYGraph.detach();
+    this.refYGraph = drawY(this.model.graphData, this.model.graphLen, 'variableSim-y', 'test', this.graphSize, this.model.graphDataTest, this.model.graphLenTest);
+    console.log("Alright graphData model:")
+    console.log(this.model.graphData)
+    this.yScaley = this.refYGraph.y
+    this.xScaley = this.refYGraph.x
+    this.refYGraph.node.offsetWidth = 250
+    this.refYGraph.node.offsetHeight = 250
+    this.refYGraph = new DOM(this.refYGraph.node);
+    this.refYGraph._container.style.transformOrigin = 'left top 0px';
+    // console.log(this.refYGraph)
+    // this.addChild(this.refYGraph);
+    this.graphBox = new Panel(new Rectangle(0, 0, 400, 410), { opacity: 0.5 });
+    this.graphBox.leftTop = new phet.dot.Vector2(1040, 35);
+    this.addChild(this.graphBox)
+
+    this.addChild(this.refXGraph);
+    this.addChild(this.refYGraph);
+    this.addChild(this.refXdotGraph);
+    this.addChild(this.refYdotGraph);
+    // this.graphBox.addChild(new VBox({children:[new HBox({children:[this.refXGraph,this.refYGraph]}),new HBox({children:[this.refXdotGraph,this.refYdotGraph]})]}),{opacity:0.5})
+
+    // this.refXdotGraph.leftTop = new phet.dot.Vector2(this.domNode.rightTop.x + 200, 30);
+    // this.refXdotGraph.leftTop = new phet.dot.Vector2(1050, 10);
+    // this.refYdotGraph.leftTop = new phet.dot.Vector2(this.refXdotGraph.rightBottom.x - 30, 10);
+    // this.refXGraph.leftTop = new phet.dot.Vector2(this.refXdotGraph.leftTop.x, this.refXdotGraph.leftTop.y+250);
+    // this.refYGraph.leftTop = new phet.dot.Vector2(this.refYdotGraph.leftTop.x, this.refYdotGraph.leftTop.y+250);
+    this.refXGraph.leftTop = new phet.dot.Vector2(1050, 40);
+    // this.refYGraph.leftTop = new phet.dot.Vector2(this.refXGraph.rightBottom.x - 30, 40);
+    this.refYGraph.leftTop = new phet.dot.Vector2(1240, 40);
+    // this.refXdotGraph.leftTop = new phet.dot.Vector2(this.refXGraph.leftTop.x, this.refXGraph.leftTop.y + 200);
+    this.refXdotGraph.leftTop = new phet.dot.Vector2(1050, 240);
+    // this.refYdotGraph.leftTop = new phet.dot.Vector2(this.refYGraph.leftTop.x, this.refYGraph.leftTop.y + 200);
+    this.refYdotGraph.leftTop = new phet.dot.Vector2(1240, 240);
+
+
+    this.refXGraph.element.children[9].setAttribute('cx', this.xScalex(0));
+    this.refXGraph.element.children[9].setAttribute('cy', this.yScalex(this.model.graphData.getX(0)));
+    if (this.model.graphDataTest.data.length > 10) {
+      this.refXGraph.element.children[7].setAttribute('cx', this.xScalex(0));
+      this.refXGraph.element.children[7].setAttribute('cy', this.yScalex(this.model.graphDataTest.getX(0)));
+    }
+    this.refYGraph.element.children[9].setAttribute('cx', this.xScaley(0));
+    this.refYGraph.element.children[9].setAttribute('cy', this.yScaley(this.model.graphData.getY(0)));
+    if (this.model.graphDataTest.data.length > 10) {
+      this.refYGraph.element.children[7].setAttribute('cx', this.xScaley(0));
+      this.refYGraph.element.children[7].setAttribute('cy', this.yScaley(this.model.graphDataTest.getY(0)));
+    }
+
+    this.refXdotGraph.element.children[9].setAttribute('cx', this.xScalevx(0));
+    this.refXdotGraph.element.children[9].setAttribute('cy', this.yScalevx(this.model.graphData.getV_X(0)));
+    if (this.model.graphDataTest.data.length > 10) {
+      this.refXdotGraph.element.children[7].setAttribute('cx', this.xScalevx(0));
+      this.refXdotGraph.element.children[7].setAttribute('cy', this.yScalevx(this.model.graphDataTest.getV_X(0)));
+    }
+    this.refYdotGraph.element.children[9].setAttribute('cx', this.xScalevy(0));
+    this.refYdotGraph.element.children[9].setAttribute('cy', this.yScalevy(this.model.graphData.getV_Y(0)));
+    if (this.model.graphDataTest.data.length > 10) {
+      this.refYdotGraph.element.children[7].setAttribute('cx', this.xScalevy(0));
+      this.refYdotGraph.element.children[7].setAttribute('cy', this.yScalevy(this.model.graphDataTest.getV_Y(0)));
+    }
+    this.focusedEq[1].mathField.blur()
     // this.ball.position.x = this.model.x -5.5;
-    // this.ball.position.y = this.model.y -.7;
+    this.ball.position.x = this.model.xProp.value - 5.5;
+    // this.ball.position.y = this.model.y  -1.3;
+    // this.ball.position.y = this.model.y  -3.6;
+    // this.ball.position.y = this.model.yProp.value  -2.6;
+    // this.ball.position.y = this.model.yProp.value  -2.35;
+    this.ball.position.y = this.model.yProp.value / 10 - 3.05;
+    // this.ballTest.position.x = this.model.x -5.5;
+    this.ballTest.position.x = this.model.xProp.value - 5.5;
+    // this.ballTest.position.y = this.model.y  -1.3;
+    // this.ballTest.position.y = this.model.y  -3.6;
+    // this.ballTest.position.y = this.model.yProp.value  -2.6;
+    // this.ballTest.position.y = this.model.yProp.value  -2.35;
+    this.ballTest.position.y = this.model.yProp.value / 10 - 3.05;
+    this.pathRef = new THREE.Path();
+    this.pathRef.currentPoint = new THREE.Vector2(this.ball.position.x, this.ball.position.y)
+
+    const points = this.pathRef.getPoints();
+
+    const geometryPath = new THREE.BufferGeometry().setFromPoints(points);
+    const materialPath = new THREE.LineBasicMaterial({ color: 0xff0000 });
+
+    this.scene.remove(this.lineRef);
+    this.lineRef = new THREE.Line(geometryPath, materialPath);
+    this.scene.add(this.lineRef);
+
+
+    this.pathTest = new THREE.Path();
+
+    this.pathTest.currentPoint = new THREE.Vector2(this.ballTest.position.x, this.ballTest.position.y)
+    const pointsTest = this.pathTest.getPoints();
+
+    const geometryPathTest = new THREE.BufferGeometry().setFromPoints(pointsTest);
+
+    this.scene.remove(this.lineTest);
+    this.lineTest = new THREE.Line(geometryPathTest, materialPath);
+    this.scene.add(this.lineTest);
+
+
+
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  public reset(action?: string): void {
+
+
+
+    this.xdotLatex = this.xdotField.mathField.latex();
+    this.ydotLatex = this.ydotField.mathField.latex();
+    this.v_xdotLatex = this.v_xdotField.mathField.latex();
+    this.v_ydotLatex = this.v_ydotField.mathField.latex();
+
+    // this.pause = false
+
+    const currentSettings = {
+      gravity: this.model.gravityProp.value,
+      kl: this.model.klProp.value,
+      kq: this.model.kqProp.value,
+      v: this.model.vProp.value,
+      angle: this.model.angleProp.value,
+      y: this.model.yProp.value,
+      v_x: this.model.v_xProp.value,
+      v_y: this.model.v_yProp.value,
+      xdotLatex: this.xdotLatex,
+      ydotLatex: this.ydotLatex,
+      v_xdotLatex: this.v_xdotLatex,
+      v_ydotLatex: this.v_ydotLatex,
+
+      xEQ: this.model.xEQ,
+      yEQ: this.model.yEQ,
+      v_xEQ: this.model.v_xEQ,
+      v_yEQ: this.model.v_yEQ,
+      dragType: this.model.quadraticDrag ? "quadratic" : "linear"
+    };
+
+    if (action === "Run") {
+      // Check if settings are different from last run
+      const lastRun = this.runHistory[this.runHistory.length - 1];
+      const isDifferent = !lastRun || Object.keys(currentSettings).some(key =>
+        lastRun[key as keyof typeof currentSettings] !== currentSettings[key as keyof typeof currentSettings]
+      );
+
+      // Only add to history if settings are different
+      if (isDifferent) {
+        this.runHistory.push(currentSettings);
+
+        // Update ComboBox with new history
+        this.updateComboBox(this.runHistory.map((_: any, index: number) => ({
+          name: `Run ${index + 1}`,
+          index
+        })));
+
+        // Update selected run to newest
+
+
+        const currentRunNumber = this.runHistory.length;
+        this.selectedRunProperty.value = `Run ${currentRunNumber}`;
+
+      }
+    }
+
+
+
+
+
+
+
 
     this.model.updateGraphs = false;
     this.scene.remove(this.group);

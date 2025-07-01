@@ -140,7 +140,7 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
     this.model = model;
 
     this.layoutBounds.maxX = 1470;
-    console.log(this.layoutBounds.maxY)
+    // console.log(this.layoutBounds.maxY)
 
 
 
@@ -589,9 +589,9 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
 
     );
 
-    console.log(`This is graph data -> `)
-    this.model.graphData.data.map(e => console.log(e.x))
-    console.log(`This is graph data <- `)
+    // console.log(`This is graph data -> `)
+    // this.model.graphData.data.map(e => console.log(e.x))
+    // console.log(`This is graph data <- `)
 
 
     const ydotField = new EquationInput(ydotDOM,
@@ -650,7 +650,7 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
         xdotField.mathField.focus()
         focusedEq[0][0] = model.xEQ
         focusedEq[0][1] = xdotField
-        console.log('xdot detected')
+        // console.log('xdot detected')
       }
     })
     const ydotBox = new HBox({ preferredWidth: 30, children: [ydotField] })
@@ -660,7 +660,7 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
         ydotField.mathField.focus()
         focusedEq[0][0] = model.yEQ
         focusedEq[0][1] = ydotField
-        console.log('ydot detected')
+        // console.log('ydot detected')
 
       }
     })
@@ -671,7 +671,7 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
         v_xdotField.mathField.focus()
         focusedEq[0][0] = model.v_xEQ
         focusedEq[0][1] = v_xdotField
-        console.log('v_xdot detected')
+        // console.log('v_xdot detected')
 
       }
     })
@@ -682,7 +682,7 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
         v_ydotField.mathField.focus()
         focusedEq[0][0] = model.v_yEQ
         focusedEq[0][1] = v_ydotField
-        console.log('v_ydot detected')
+        // console.log('v_ydot detected')
 
       }
     })
@@ -737,7 +737,7 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
     loader.load('/projectile-motion-drag/js/projectile-motion-drag/view/original.png', function (texture) {
       scene.background = texture;
 
-      console.log(texture)
+      // console.log(texture)
     });
     // loader.load('/projectile-motion-drag/js/projectile-motion-drag/view/background.png', function (texture) {
     //   scene.background = texture;
@@ -1010,7 +1010,7 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
     // ball.position.set(.8, 0, 0)
     // ball.position.set(-5.3, -.5, 0)
     // ball.position.set(-5.3, 10.5, 0)
-    console.log(cannon)
+    // console.log(cannon)
     // ball.position.set(0, 0, 0);
     // cannon.position.set(-5.5, -3.3, 0)
 
@@ -1210,7 +1210,7 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
 
 
     let reset = (action = "") => {
-      console.log("Reset called")
+      // console.log("Reset called")
 
 
 
@@ -1318,7 +1318,7 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
         isSettingProperty = true;
         numberProperty.value = numberItems[0].value;
         isSettingProperty = false;
-        console.log(`Added item ${i}`);
+        // console.log(`Added item ${i}`);
       }
 
 
@@ -1520,7 +1520,7 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
     // Link the property to update model.quadraticDrag
     dragTypeProperty.link(dragType => {
       model.quadraticDrag = (dragType === DragType.QUADRATIC);
-      console.log(`Drag type changed to: ${dragType} => ${model.quadraticDrag}`);
+      // console.log(`Drag type changed to: ${dragType} => ${model.quadraticDrag}`);
     });
 
     // Then create the panel with the radio button group
@@ -1562,7 +1562,7 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
     // ResumeButton.leftTop = new phet.dot.Vector2(10, 100)
     resetAndPausePanel.leftTop = new phet.dot.Vector2(testEquationPanel.leftBottom.x, testEquationPanel.leftBottom.y + 10)
     // resetAndPausePanel.leftTop = new phet.dot.Vector2(equationPanel.width, equationPanel.leftBottom.y + 10)
-    console.log(this.layoutBounds)
+    // console.log(this.layoutBounds)
 
 
     // RectBase
@@ -1660,7 +1660,7 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
           // adjustHeight("Up");
           rectangle.position.y += .1 / 10
 
-          console.log(`This is confirmation ${this.model.yProp.value}`)
+          // console.log(`This is confirmation ${this.model.yProp.value}`)
 
           // cannon.position.y += 0.1
           // cannon.position.y = this.model.cannonPositionYProp.value
@@ -1730,11 +1730,11 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
     let action: any;
     for (var slider of constantSliders._children.concat(speedConstantSliders._children)) {
 
-      console.log(slider === simSpeedSlider)
+      // console.log(slider === simSpeedSlider)
       if (slider !== simSpeedSlider) {
         slider.addInputListener({
           down: function (event) {
-            console.log(Math.asin(model.v_yProp.value / Math.sqrt(Math.pow(model.v_xProp.value, 2) + Math.pow(model.v_yProp.value, 2))))
+            // console.log(Math.asin(model.v_yProp.value / Math.sqrt(Math.pow(model.v_xProp.value, 2) + Math.pow(model.v_yProp.value, 2))))
             // model.angleProp.value = Math.asin(model.v_yProp.value / Math.sqrt(Math.pow(model.v_xProp.value, 2) + Math.pow(model.v_yProp.value, 2)))
             // cannon.rotation.z = model.angle
             // cannon.rotation.z = model.angleProp.value
@@ -1746,7 +1746,7 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
             vx = model.v_x;  // Initial horizontal velocity of the ball
             vy = model.v_y;  // Initial vertical velocity of the ball
             mouseDown = true
-            console.log(`This is IDDDDDD ${event.target._id}`)
+            // console.log(`This is IDDDDDD ${event.target._id}`)
             if (event.target._id === 183) {
               action = 183
 
@@ -1859,8 +1859,8 @@ export default class ProjectileMotionDragScreenView extends ScreenView {
 
     this.refYGraph.detach();
     this.refYGraph = drawY(this.model.graphData, this.model.graphLen, 'variableSim-y', 'test', this.graphSize, this.model.graphDataTest, this.model.graphLenTest);
-    console.log("Alright graphData model:")
-    console.log(this.model.graphData)
+    // console.log("Alright graphData model:")
+    // console.log(this.model.graphData)
     this.yScaley = this.refYGraph.y
     this.xScaley = this.refYGraph.x
     this.refYGraph = new DOM(this.refYGraph.node);

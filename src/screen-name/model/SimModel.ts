@@ -42,6 +42,8 @@ export class SimModel {
   public minAngleProp: Property<number>
   public action: any
 
+  private isUpdatingProperties = false;
+  private resetTimeout: number | null = null;
 
 
 
@@ -146,60 +148,80 @@ export class SimModel {
     // this.v_y = Math.sin(this.angle * (Math.PI / 180)) * this.v;
 
 
-    // Define your sliders and their linked properties
-    this.vProp.link((val) => {
-      if (!this.updateGraphs) {
-        this.updateGraphs = true;
-        this.v_xProp.value = val * Math.cos(this.angle * (Math.PI / 180));
-        this.v_yProp.value = val * Math.sin(this.angle * (Math.PI / 180));
-        this.reset()
-        this.updateGraphs = false;
-      }
-    });
+    // // Define your sliders and their linked properties
+    // this.vProp.link((val) => {
+    //   if (!this.updateGraphs) {
+    //     this.updateGraphs = true;
+    //     this.v_xProp.value = val * Math.cos(this.angle * (Math.PI / 180));
+    //     this.v_yProp.value = val * Math.sin(this.angle * (Math.PI / 180));
+    //     this.reset()
+    //     this.updateGraphs = false;
+    //   }
+    // });
 
-    this.angleProp.link((val) => {
-      if (!this.updateGraphs) {
-        this.updateGraphs = true;
-        this.angle = val;
-        this.v_xProp.value = this.vProp.value * Math.cos(val * (Math.PI / 180));
-        this.v_yProp.value = this.vProp.value * Math.sin(val * (Math.PI / 180));
-        this.reset()
-        this.updateGraphs = false;
-      }
-    });
+    // this.angleProp.link((val) => {
+    //   if (!this.updateGraphs) {
+    //     this.updateGraphs = true;
+    //     this.angle = val;
+    //     this.v_xProp.value = this.vProp.value * Math.cos(val * (Math.PI / 180));
+    //     this.v_yProp.value = this.vProp.value * Math.sin(val * (Math.PI / 180));
+    //     this.reset()
+    //     this.updateGraphs = false;
+    //   }
+    // });
 
-    this.v_xProp.link((val) => {
-      if (!this.updateGraphs) {
-        this.updateGraphs = true;
-        this.vProp.value = Math.sqrt(Math.pow(val, 2) + Math.pow(this.v_yProp.value, 2));
-        this.angleProp.value = Math.atan2(this.v_yProp.value, val) * (180 / Math.PI);
-        this.reset()
-        this.updateGraphs = false;
-      }
-    });
+    // this.v_xProp.link((val) => {
+    //   if (!this.updateGraphs) {
+    //     this.updateGraphs = true;
+    //     this.vProp.value = Math.sqrt(Math.pow(val, 2) + Math.pow(this.v_yProp.value, 2));
+    //     this.angleProp.value = Math.atan2(this.v_yProp.value, val) * (180 / Math.PI);
+    //     this.reset()
+    //     this.updateGraphs = false;
+    //   }
+    // });
 
-    this.v_yProp.link((val) => {
-      if (!this.updateGraphs) {
-        this.updateGraphs = true;
-        this.vProp.value = Math.sqrt(Math.pow(val, 2) + Math.pow(this.v_xProp.value, 2));
-        this.angleProp.value = Math.atan2(val, this.v_xProp.value) * (180 / Math.PI);
-        this.reset()
-        this.updateGraphs = false;
-      }
-    });
+    // this.v_yProp.link((val) => {
+    //   if (!this.updateGraphs) {
+    //     this.updateGraphs = true;
+    //     this.vProp.value = Math.sqrt(Math.pow(val, 2) + Math.pow(this.v_xProp.value, 2));
+    //     this.angleProp.value = Math.atan2(val, this.v_xProp.value) * (180 / Math.PI);
+    //     this.reset()
+    //     this.updateGraphs = false;
+    //   }
+    // });
+
+    // Replace your current property links with:
+    this.vProp.link((val) => this.updateVelocityProperties('v', val));
+    this.angleProp.link((val) => this.updateVelocityProperties('angle', val));
+    this.v_xProp.link((val) => this.updateVelocityProperties('v_x', val));
+    this.v_yProp.link((val) => this.updateVelocityProperties('v_y', val));
 
     let prevY = this.yProp.value;
 
-    this.yProp.link((val) => {
+    // this.yProp.link((val) => {
+    //   if (!this.updateGraphs) {
+    //     this.updateGraphs = true;
+    //     this.cannonPositionYProp.value += val - prevY;
+    //     prevY = val
+    //     this.reset()
+    //     this.updateGraphs = false;
+    //   }
+    // })
 
-      if (!this.updateGraphs) {
-        this.updateGraphs = true;
-        this.cannonPositionYProp.value += val - prevY;
-        prevY = val
-        this.reset()
-        this.updateGraphs = false;
+
+    this.yProp.link((val) => {
+      if (this.isUpdatingProperties) return;
+
+      this.isUpdatingProperties = true;
+      try {
+        const deltaY = val - this.y;
+        this.y = val;
+        this.cannonPositionYProp.value += deltaY;
+        this.scheduleReset();
+      } finally {
+        this.isUpdatingProperties = false;
       }
-    })
+    });
 
 
     var radius = .7;
@@ -253,6 +275,78 @@ export class SimModel {
     this.graphLenTest = this.graphDataTest.data.length * this.graphUpdateInterval;
     this.updateGraphs = false;
   }
+
+
+
+
+
+
+
+
+  // newly added method to update velocity properties based on the source of change
+
+  private updateVelocityProperties(source: 'v' | 'angle' | 'v_x' | 'v_y', newValue: number): void {
+    if (this.isUpdatingProperties) return;
+
+    this.isUpdatingProperties = true;
+
+    try {
+      switch (source) {
+        case 'v':
+          this.v_xProp.value = newValue * Math.cos(this.angle * (Math.PI / 180));
+          this.v_yProp.value = newValue * Math.sin(this.angle * (Math.PI / 180));
+          break;
+        case 'angle':
+          this.angle = newValue;
+          this.v_xProp.value = this.vProp.value * Math.cos(newValue * (Math.PI / 180));
+          this.v_yProp.value = this.vProp.value * Math.sin(newValue * (Math.PI / 180));
+          break;
+        case 'v_x':
+          this.vProp.value = Math.sqrt(Math.pow(newValue, 2) + Math.pow(this.v_yProp.value, 2));
+          this.angleProp.value = Math.atan2(this.v_yProp.value, newValue) * (180 / Math.PI);
+          break;
+        case 'v_y':
+          this.vProp.value = Math.sqrt(Math.pow(newValue, 2) + Math.pow(this.v_xProp.value, 2));
+          this.angleProp.value = Math.atan2(newValue, this.v_xProp.value) * (180 / Math.PI);
+          break;
+      }
+
+      this.reset();
+    } finally {
+      this.isUpdatingProperties = false;
+    }
+  }
+
+
+  private scheduleReset(reason = ""): void {
+    if (this.resetTimeout) {
+      clearTimeout(this.resetTimeout);
+    }
+
+    this.resetTimeout = window.setTimeout(() => {
+      this.reset(reason);
+      this.resetTimeout = null;
+    }, 6); // Debounce for ~1 frame at 60fps
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   public reset(value_changed = ""): void {
     this.timerTest = 0;
     this.startTest = false;
@@ -278,13 +372,13 @@ export class SimModel {
       this.v_yProp.value = this.vProp.value * Math.sin(this.angleProp.value * (Math.PI / 180));
 
     }
-    console.log('angle: ', Math.atan2(this.v_y, this.v_x) * (180 / Math.PI))
+    // console.log('angle: ', Math.atan2(this.v_y, this.v_x) * (180 / Math.PI))
     var radius = .7;
     this.x = 0
     this.y = 0 + this.yProp.value;
 
 
-    console.log(`from model for y -> ${this.y}`)
+    // console.log(`from model for y -> ${this.y}`)
 
     let angle = (Math.atan2(this.v_y, this.v_x) * (180 / Math.PI));
 
@@ -306,7 +400,7 @@ export class SimModel {
     this.updateGraphs = true;
 
     this.graphData = getGraphData(this.quadraticDrag, this.graphUpdateInterval, this.x, this.y, this.y, angle, this.v_x, this.v_y, this.gravity, this.kl, this.kq, this.mass, {}, false, this.graphLen, this.graphData, this.timer);
-    console.log(this.graphData)
+    // console.log(this.graphData)
     if (this.validEqs) {
       if (this.xEQ === '' || this.yEQ === '' || this.v_xEQ === '' || this.v_yEQ === '') {
         this.graphDataTest = new simData(this.graphUpdateInterval)
@@ -338,22 +432,17 @@ export class SimModel {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public step(dt: number): void {
-    // console.log(this.graphData)
+
     if (!this.paused) {
-      this.timer += dt * this.simSpeedProp.value;
-      // console.log(this.timer)
+      // this.timer += dt * this.simSpeedProp.value;
+      this.timer += 0.016 * this.simSpeedProp.value;
+
       if (this.startTest) {
-        this.timerTest += dt * this.simSpeedProp.value;
+        // this.timerTest += dt * this.simSpeedProp.value;
+        this.timerTest += 0.016 * this.simSpeedProp.value;
 
       }
-      // this.x = this.graphData.getX(this.timer)
-      // this.y = this.graphData.getY(this.timer)
-      // this.v_x = this.graphData.getVX(this.timer)
-      // this.v_y = this.graphData.getVY(this.timer)
-      // this.xTest = this.graphDataTest.getX(this.timer)
-      // this.yTest = this.graphDataTest.getY(this.timer)
-      // this.v_xTest = this.graphDataTest.getVX(this.timer)
-      // this.v_yTest = this.graphDataTest.getVY(this.timer)
+
 
       if (this.timer < this.graphLen) {
 

@@ -1,5 +1,4 @@
 
-// import { DOM, Display, Input, VBox, Node, KeyboardUtils } from '../../../../scenery/js/imports.js';
 import { Node, DOM, Emitter, KeyboardUtils } from 'scenerystack';
 import post from '../../common/postData.js';
 
@@ -95,10 +94,18 @@ export default class EquationInput extends Node {
         mathField.blur();
       }
     });
-   
+
 
 
     this.domElement = domElement;
+  }
+
+  updateText(newLatex) {
+    if (this.mathField) {
+      // Set the raw LaTeX for display only
+      this.mathField.latex(newLatex);
+      // Do NOT set this.property.value here!
+    }
   }
 
   getElementValue() {
