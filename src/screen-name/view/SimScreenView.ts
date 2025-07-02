@@ -100,6 +100,7 @@ export class SimScreenView extends ScreenView {
   ydotLatex: any;
   v_xdotLatex: any;
   v_ydotLatex: any;
+  private isRestoringRun: false;
 
 
 
@@ -1202,9 +1203,9 @@ export class SimScreenView extends ScreenView {
           this.model.v_xEQ = run.v_xEQ;
           this.model.v_yEQ = run.v_yEQ;
 
-          // this.restoreRun();  // Add this method next
-          // this.restoringRun = true;
+
           dragTypeProperty.value = run.dragType === "quadratic" ? DragType.QUADRATIC : DragType.LINEAR;
+
           this.restoreRun()
           // this.reset();  // Add this method next
 
@@ -1254,95 +1255,7 @@ export class SimScreenView extends ScreenView {
       // ball.position.set(-5.3, -3.1, 0)
       isSpacePressed = false;
 
-      // if (action !== "Start" && action == "Run") {
 
-      //   i = i + 1;
-      //   const newValue = i;
-
-
-      //   // Check if we have a previous run to compare with
-      //   if (numberItems.length > 1) {
-      //     const lastRun = numberItems[0]; // Get the most recent run (excluding "Records")
-
-      //     // Compare all relevant values
-      //     const sameValues =
-      //       lastRun.g === model.gravityProp.value &&
-      //       lastRun.kl === model.klProp.value &&
-      //       lastRun.kq === model.kqProp.value &&
-      //       lastRun.m === model.massProp.value &&
-      //       lastRun.v_x === model.v_xProp.value &&
-      //       lastRun.v_y === model.v_yProp.value &&
-      //       lastRun.y === model.y &&
-      //       lastRun.angle === model.angleProp.value &&
-      //       lastRun.xEQ === model.xEQ &&
-      //       lastRun.yEQ === model.yEQ &&
-      //       lastRun.v_xEQ === model.v_xEQ &&
-      //       lastRun.v_yEQ === model.v_yEQ &&
-      //       lastRun.quadratic === model.quadraticDrag;
-
-      //     // Only add new run if values are different
-      //     if (sameValues) {
-      //       i--; // Decrement i since we're not adding a new run
-      //       return; // Exit without adding new run
-      //     }
-      //   }
-
-
-
-
-
-      //   // Add new item to items array
-      //   numberItems.unshift({
-      //     value: newValue,
-      //     createNode: () => new RichText(`Run - ${newValue - 1}`, { maxWidth: 50 }),
-      //     g: model.gravityProp.value,
-      //     kl: model.klProp.value,
-      //     kq: model.kqProp.value,
-      //     m: model.massProp.value,
-      //     v_x: model.v_xProp.value,
-      //     v_y: model.v_yProp.value,
-      //     y: model.y,
-      //     angle: model.angleProp.value,
-      //     xEQ: model.xEQ,
-      //     yEQ: model.yEQ,
-      //     v_xEQ: model.v_xEQ,
-      //     v_yEQ: model.v_yEQ,
-      //     quadratic: model.quadraticDrag
-
-
-      //   });
-
-      //   // IMPORTANT: Completely detach the old panel first
-      //   if (numberComboBox) {
-      //     this.removeChild(numberComboBox); // Remove the old ComboBox from the view
-      //     numberComboBox.dispose(); // Dispose of the old ComboBox
-      //   }
-
-
-      //   numberComboBox = new ComboBox(
-      //     numberProperty,
-      //     numberItems,
-      //     this,
-      //     {
-      //       listPosition: 'above',
-      //       cornerRadius: 5,
-      //       buttonColorProperty: new Property(new Color('white')),
-      //       buttonYMargin: 5,
-      //       buttonXMargin: 10,
-      //       listYMargin: 5,
-      //       maxWidth: 100
-      //     }
-      //   );
-
-      //   // Add panel to view
-      //   this.addChild(numberComboBox);
-      //   numberComboBox.leftTop = new Vector2(250, 565);
-
-      //   isSettingProperty = true;
-      //   numberProperty.value = numberItems[0].value;
-      //   isSettingProperty = false;
-      //   console.log(`Added item ${i}`);
-      // }
 
 
 
@@ -1884,147 +1797,19 @@ export class SimScreenView extends ScreenView {
     this.v_xdotField.updateText(this.v_xdotLatex);
     this.v_ydotField.updateText(this.v_ydotLatex);
 
+    this.spacePressed = true;
+    this.model.paused = false;
+    this.model.reset();
+    this.reset();
+    console.log(`is space pressed: ${this.spacePressed}`)
+    this.model.paused = false;
+ 
+    
 
 
-    // this.model.reset();
-    this.model.updateGraphs = false;
-    this.scene.remove(this.group);
-    this.group = new THREE.Group();
-    this.scene.add(this.group);
-    this.graphBox.detach()
+    
+  
 
-    this.refXdotGraph.detach();
-    this.refXdotGraph = drawV_X(this.model.graphData, this.model.graphLen, 'staticSim-xdot', 'reference', this.graphSize, this.model.graphDataTest, this.model.graphLenTest);
-    this.yScalevx = this.refXdotGraph.y
-    this.xScalevx = this.refXdotGraph.x
-    this.refXdotGraph.node.offsetWidth = 250
-    this.refXdotGraph.node.offsetHeight = 250
-    this.refXdotGraph = new DOM(this.refXdotGraph.node);
-    this.refXdotGraph._container.style.transformOrigin = 'left top 0px';
-    // this.addChild(this.refXdotGraph);
-
-
-    this.refYdotGraph.detach();
-    this.refYdotGraph = drawV_Y(this.model.graphData, this.model.graphLen, 'variableSim-ydot', 'test', this.graphSize, this.model.graphDataTest, this.model.graphLenTest);
-    this.yScalevy = this.refYdotGraph.y
-    this.xScalevy = this.refYdotGraph.x
-    this.refYdotGraph.node.offsetWidth = 250
-    this.refYdotGraph.node.offsetHeight = 250
-    this.refYdotGraph = new DOM(this.refYdotGraph.node);
-    this.refYdotGraph._container.style.transformOrigin = 'left top 0px';
-    // this.addChild(this.refYdotGraph);
-
-    this.refXGraph.detach();
-    this.refXGraph = drawX(this.model.graphData, this.model.graphLen, 'staticSim-x', 'reference', this.graphSize, this.model.graphDataTest, this.model.graphLenTest);
-    this.yScalex = this.refXGraph.y
-    this.xScalex = this.refXGraph.x
-    this.refXGraph.node.offsetWidth = 250
-    this.refXGraph.node.offsetHeight = 250
-    this.refXGraph = new DOM(this.refXGraph.node);
-    this.refXGraph._container.style.transformOrigin = 'left top 0px';
-    // this.addChild(this.refXGraph);
-    // this.rootNode.addChild(this.refXGraph);
-    // this.addChild(this.refXGraph);
-
-    this.refYGraph.detach();
-    this.refYGraph = drawY(this.model.graphData, this.model.graphLen, 'variableSim-y', 'test', this.graphSize, this.model.graphDataTest, this.model.graphLenTest);
-    console.log("Alright graphData model:")
-    console.log(this.model.graphData)
-    this.yScaley = this.refYGraph.y
-    this.xScaley = this.refYGraph.x
-    this.refYGraph.node.offsetWidth = 250
-    this.refYGraph.node.offsetHeight = 250
-    this.refYGraph = new DOM(this.refYGraph.node);
-    this.refYGraph._container.style.transformOrigin = 'left top 0px';
-    // console.log(this.refYGraph)
-    // this.addChild(this.refYGraph);
-    this.graphBox = new Panel(new Rectangle(0, 0, 400, 410), { opacity: 0.5 });
-    this.graphBox.leftTop = new phet.dot.Vector2(1040, 35);
-    this.addChild(this.graphBox)
-
-    this.addChild(this.refXGraph);
-    this.addChild(this.refYGraph);
-    this.addChild(this.refXdotGraph);
-    this.addChild(this.refYdotGraph);
-    // this.graphBox.addChild(new VBox({children:[new HBox({children:[this.refXGraph,this.refYGraph]}),new HBox({children:[this.refXdotGraph,this.refYdotGraph]})]}),{opacity:0.5})
-
-    // this.refXdotGraph.leftTop = new phet.dot.Vector2(this.domNode.rightTop.x + 200, 30);
-    // this.refXdotGraph.leftTop = new phet.dot.Vector2(1050, 10);
-    // this.refYdotGraph.leftTop = new phet.dot.Vector2(this.refXdotGraph.rightBottom.x - 30, 10);
-    // this.refXGraph.leftTop = new phet.dot.Vector2(this.refXdotGraph.leftTop.x, this.refXdotGraph.leftTop.y+250);
-    // this.refYGraph.leftTop = new phet.dot.Vector2(this.refYdotGraph.leftTop.x, this.refYdotGraph.leftTop.y+250);
-    this.refXGraph.leftTop = new phet.dot.Vector2(1050, 40);
-    // this.refYGraph.leftTop = new phet.dot.Vector2(this.refXGraph.rightBottom.x - 30, 40);
-    this.refYGraph.leftTop = new phet.dot.Vector2(1240, 40);
-    // this.refXdotGraph.leftTop = new phet.dot.Vector2(this.refXGraph.leftTop.x, this.refXGraph.leftTop.y + 200);
-    this.refXdotGraph.leftTop = new phet.dot.Vector2(1050, 240);
-    // this.refYdotGraph.leftTop = new phet.dot.Vector2(this.refYGraph.leftTop.x, this.refYGraph.leftTop.y + 200);
-    this.refYdotGraph.leftTop = new phet.dot.Vector2(1240, 240);
-
-
-    this.refXGraph.element.children[9].setAttribute('cx', this.xScalex(0));
-    this.refXGraph.element.children[9].setAttribute('cy', this.yScalex(this.model.graphData.getX(0)));
-    if (this.model.graphDataTest.data.length > 10) {
-      this.refXGraph.element.children[7].setAttribute('cx', this.xScalex(0));
-      this.refXGraph.element.children[7].setAttribute('cy', this.yScalex(this.model.graphDataTest.getX(0)));
-    }
-    this.refYGraph.element.children[9].setAttribute('cx', this.xScaley(0));
-    this.refYGraph.element.children[9].setAttribute('cy', this.yScaley(this.model.graphData.getY(0)));
-    if (this.model.graphDataTest.data.length > 10) {
-      this.refYGraph.element.children[7].setAttribute('cx', this.xScaley(0));
-      this.refYGraph.element.children[7].setAttribute('cy', this.yScaley(this.model.graphDataTest.getY(0)));
-    }
-
-    this.refXdotGraph.element.children[9].setAttribute('cx', this.xScalevx(0));
-    this.refXdotGraph.element.children[9].setAttribute('cy', this.yScalevx(this.model.graphData.getV_X(0)));
-    if (this.model.graphDataTest.data.length > 10) {
-      this.refXdotGraph.element.children[7].setAttribute('cx', this.xScalevx(0));
-      this.refXdotGraph.element.children[7].setAttribute('cy', this.yScalevx(this.model.graphDataTest.getV_X(0)));
-    }
-    this.refYdotGraph.element.children[9].setAttribute('cx', this.xScalevy(0));
-    this.refYdotGraph.element.children[9].setAttribute('cy', this.yScalevy(this.model.graphData.getV_Y(0)));
-    if (this.model.graphDataTest.data.length > 10) {
-      this.refYdotGraph.element.children[7].setAttribute('cx', this.xScalevy(0));
-      this.refYdotGraph.element.children[7].setAttribute('cy', this.yScalevy(this.model.graphDataTest.getV_Y(0)));
-    }
-    this.focusedEq[1].mathField.blur()
-    // this.ball.position.x = this.model.x -5.5;
-    this.ball.position.x = this.model.xProp.value - 5.5;
-    // this.ball.position.y = this.model.y  -1.3;
-    // this.ball.position.y = this.model.y  -3.6;
-    // this.ball.position.y = this.model.yProp.value  -2.6;
-    // this.ball.position.y = this.model.yProp.value  -2.35;
-    this.ball.position.y = this.model.yProp.value / 10 - 3.05;
-    // this.ballTest.position.x = this.model.x -5.5;
-    this.ballTest.position.x = this.model.xProp.value - 5.5;
-    // this.ballTest.position.y = this.model.y  -1.3;
-    // this.ballTest.position.y = this.model.y  -3.6;
-    // this.ballTest.position.y = this.model.yProp.value  -2.6;
-    // this.ballTest.position.y = this.model.yProp.value  -2.35;
-    this.ballTest.position.y = this.model.yProp.value / 10 - 3.05;
-    this.pathRef = new THREE.Path();
-    this.pathRef.currentPoint = new THREE.Vector2(this.ball.position.x, this.ball.position.y)
-
-    const points = this.pathRef.getPoints();
-
-    const geometryPath = new THREE.BufferGeometry().setFromPoints(points);
-    const materialPath = new THREE.LineBasicMaterial({ color: 0xff0000 });
-
-    this.scene.remove(this.lineRef);
-    this.lineRef = new THREE.Line(geometryPath, materialPath);
-    this.scene.add(this.lineRef);
-
-
-    this.pathTest = new THREE.Path();
-
-    this.pathTest.currentPoint = new THREE.Vector2(this.ballTest.position.x, this.ballTest.position.y)
-    const pointsTest = this.pathTest.getPoints();
-
-    const geometryPathTest = new THREE.BufferGeometry().setFromPoints(pointsTest);
-
-    this.scene.remove(this.lineTest);
-    this.lineTest = new THREE.Line(geometryPathTest, materialPath);
-    this.scene.add(this.lineTest);
 
 
 
@@ -2054,7 +1839,7 @@ export class SimScreenView extends ScreenView {
     this.v_xdotLatex = this.v_xdotField.mathField.latex();
     this.v_ydotLatex = this.v_ydotField.mathField.latex();
 
-    // this.pause = false
+
 
     const currentSettings = {
       gravity: this.model.gravityProp.value,
@@ -2169,13 +1954,7 @@ export class SimScreenView extends ScreenView {
     this.addChild(this.refYGraph);
     this.addChild(this.refXdotGraph);
     this.addChild(this.refYdotGraph);
-    // this.graphBox.addChild(new VBox({children:[new HBox({children:[this.refXGraph,this.refYGraph]}),new HBox({children:[this.refXdotGraph,this.refYdotGraph]})]}),{opacity:0.5})
 
-    // this.refXdotGraph.leftTop = new phet.dot.Vector2(this.domNode.rightTop.x + 200, 30);
-    // this.refXdotGraph.leftTop = new phet.dot.Vector2(1050, 10);
-    // this.refYdotGraph.leftTop = new phet.dot.Vector2(this.refXdotGraph.rightBottom.x - 30, 10);
-    // this.refXGraph.leftTop = new phet.dot.Vector2(this.refXdotGraph.leftTop.x, this.refXdotGraph.leftTop.y+250);
-    // this.refYGraph.leftTop = new phet.dot.Vector2(this.refYdotGraph.leftTop.x, this.refYdotGraph.leftTop.y+250);
     this.refXGraph.leftTop = new phet.dot.Vector2(1050, 40);
     // this.refYGraph.leftTop = new phet.dot.Vector2(this.refXGraph.rightBottom.x - 30, 40);
     this.refYGraph.leftTop = new phet.dot.Vector2(1240, 40);
