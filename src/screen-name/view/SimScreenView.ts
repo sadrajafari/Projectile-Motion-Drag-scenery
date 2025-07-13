@@ -101,6 +101,7 @@ export class SimScreenView extends ScreenView {
   v_xdotLatex: any;
   v_ydotLatex: any;
   private isRestoringRun: false;
+  runner: boolean;
 
 
 
@@ -125,7 +126,7 @@ export class SimScreenView extends ScreenView {
     this.model = model;
 
     this.layoutBounds.maxX = 1470;
-    console.log(this.layoutBounds.maxY)
+
 
 
 
@@ -564,9 +565,7 @@ export class SimScreenView extends ScreenView {
 
     this.xdotField = xdotField;
 
-    console.log(`This is graph data -> `)
-    this.model.graphData.data.map(e => console.log(e.x))
-    console.log(`This is graph data <- `)
+
 
 
     const ydotField = new EquationInput(ydotDOM,
@@ -631,7 +630,7 @@ export class SimScreenView extends ScreenView {
         xdotField.mathField.focus()
         focusedEq[0][0] = model.xEQ
         focusedEq[0][1] = xdotField
-        console.log('xdot detected')
+
       }
     })
     const ydotBox = new HBox({ preferredWidth: 30, children: [ydotField] })
@@ -641,7 +640,7 @@ export class SimScreenView extends ScreenView {
         ydotField.mathField.focus()
         focusedEq[0][0] = model.yEQ
         focusedEq[0][1] = ydotField
-        console.log('ydot detected')
+
 
       }
     })
@@ -652,7 +651,7 @@ export class SimScreenView extends ScreenView {
         v_xdotField.mathField.focus()
         focusedEq[0][0] = model.v_xEQ
         focusedEq[0][1] = v_xdotField
-        console.log('v_xdot detected')
+
 
       }
     })
@@ -663,7 +662,7 @@ export class SimScreenView extends ScreenView {
         v_ydotField.mathField.focus()
         focusedEq[0][0] = model.v_yEQ
         focusedEq[0][1] = v_ydotField
-        console.log('v_ydot detected')
+
 
       }
     })
@@ -718,7 +717,7 @@ export class SimScreenView extends ScreenView {
     loader.load('/src/screen-name/view/original.png', function (texture) {
       scene.background = texture;
 
-      console.log(texture)
+
     });
     // loader.load('/projectile-motion-drag/js/projectile-motion-drag/view/background.png', function (texture) {
     //   scene.background = texture;
@@ -991,7 +990,7 @@ export class SimScreenView extends ScreenView {
     // ball.position.set(.8, 0, 0)
     // ball.position.set(-5.3, -.5, 0)
     // ball.position.set(-5.3, 10.5, 0)
-    console.log(cannon)
+
     // ball.position.set(0, 0, 0);
     // cannon.position.set(-5.5, -3.3, 0)
 
@@ -1234,7 +1233,7 @@ export class SimScreenView extends ScreenView {
 
 
     const reset = (action = "") => {
-      console.log("Reset called")
+
 
 
 
@@ -1456,7 +1455,7 @@ export class SimScreenView extends ScreenView {
     // Link the property to update model.quadraticDrag
     dragTypeProperty.link(dragType => {
       model.quadraticDrag = (dragType === DragType.QUADRATIC);
-      console.log(`Drag type changed to: ${dragType} => ${model.quadraticDrag}`);
+
     });
 
     // Then create the panel with the radio button group
@@ -1499,7 +1498,7 @@ export class SimScreenView extends ScreenView {
     // ResumeButton.leftTop = new phet.dot.Vector2(10, 100)
     resetAndPausePanel.leftTop = new phet.dot.Vector2(testEquationPanel.leftBottom.x, testEquationPanel.leftBottom.y + 2)
     // resetAndPausePanel.leftTop = new phet.dot.Vector2(equationPanel.width, equationPanel.leftBottom.y + 10)
-    console.log(this.layoutBounds)
+
 
 
     // RectBase
@@ -1597,7 +1596,7 @@ export class SimScreenView extends ScreenView {
           // adjustHeight("Up");
           rectangle.position.y += .1 / 10
 
-          console.log(`This is confirmation ${this.model.yProp.value}`)
+
 
           // cannon.position.y += 0.1
           // cannon.position.y = this.model.cannonPositionYProp.value
@@ -1667,11 +1666,11 @@ export class SimScreenView extends ScreenView {
     let action: any;
     for (var slider of constantSliders._children.concat(speedConstantSliders._children)) {
 
-      console.log(slider === simSpeedSlider)
+
       if (slider !== simSpeedSlider) {
         slider.addInputListener({
           down: function (event) {
-            console.log(Math.asin(model.v_yProp.value / Math.sqrt(Math.pow(model.v_xProp.value, 2) + Math.pow(model.v_yProp.value, 2))))
+
             // model.angleProp.value = Math.asin(model.v_yProp.value / Math.sqrt(Math.pow(model.v_xProp.value, 2) + Math.pow(model.v_yProp.value, 2)))
             // cannon.rotation.z = model.angle
             // cannon.rotation.z = model.angleProp.value
@@ -1683,7 +1682,7 @@ export class SimScreenView extends ScreenView {
             vx = model.v_x;  // Initial horizontal velocity of the ball
             vy = model.v_y;  // Initial vertical velocity of the ball
             mouseDown = true
-            console.log(`This is IDDDDDD ${event.target._id}`)
+
             if (event.target._id === 183) {
               action = 183
 
@@ -1751,26 +1750,6 @@ export class SimScreenView extends ScreenView {
     })
 
 
-
-    // const resetAllButton = new ResetAllButton({
-    //   listener: () => {
-    //     this.interruptSubtreeInput();
-    //     model.reset();
-    //     this.reset();
-    //   },
-    //   right: this.layoutBounds.maxX - 10,
-    //   bottom: this.layoutBounds.maxY - 10,
-    // });
-    // this.addChild(resetAllButton);
-
-
-
-
-
-
-
-
-
   }
 
 
@@ -1797,19 +1776,17 @@ export class SimScreenView extends ScreenView {
     this.v_xdotField.updateText(this.v_xdotLatex);
     this.v_ydotField.updateText(this.v_ydotLatex);
 
+
+
+    this.runner = false;
+
+
+    
     this.spacePressed = true;
     this.model.paused = false;
-    this.model.reset();
+    this.model.reset("Restore from history");
     this.reset();
-    console.log(`is space pressed: ${this.spacePressed}`)
     this.model.paused = false;
- 
-    
-
-
-    
-  
-
 
 
 
@@ -1936,8 +1913,7 @@ export class SimScreenView extends ScreenView {
 
     this.refYGraph.detach();
     this.refYGraph = drawY(this.model.graphData, this.model.graphLen, 'variableSim-y', 'test', this.graphSize, this.model.graphDataTest, this.model.graphLenTest);
-    console.log("Alright graphData model:")
-    console.log(this.model.graphData)
+
     this.yScaley = this.refYGraph.y
     this.xScaley = this.refYGraph.x
     this.refYGraph.node.offsetWidth = 250
@@ -1992,10 +1968,7 @@ export class SimScreenView extends ScreenView {
     this.focusedEq[1].mathField.blur()
     // this.ball.position.x = this.model.x -5.5;
     this.ball.position.x = this.model.xProp.value - 5.5;
-    // this.ball.position.y = this.model.y  -1.3;
-    // this.ball.position.y = this.model.y  -3.6;
-    // this.ball.position.y = this.model.yProp.value  -2.6;
-    // this.ball.position.y = this.model.yProp.value  -2.35;
+
     this.ball.position.y = this.model.yProp.value / 10 - 3.05;
     // this.ballTest.position.x = this.model.x -5.5;
     this.ballTest.position.x = this.model.xProp.value - 5.5;
@@ -2031,22 +2004,17 @@ export class SimScreenView extends ScreenView {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public step(dt: number): void {
-    // this.x = 0;
-    // this.y = 0;
-    if (this.spacePressed && !this.model.paused) {
-      // console.log(this.model.graphDataTest.getY(this.model.timerTest))
-      // console.log(`This is result from ball -> ${this.ball.position.y}`)
+
+    if (this.spacePressed && !this.model.paused && this.runner) {
+
 
       const bufferXRef = this.ball.position.x;
       const bufferYRef = this.ball.position.y;
       const bufferXTest = this.ballTest.position.x;
       const bufferYTest = this.ballTest.position.y;
-      // this.ball.position.x = this.model.graphData.getX(this.model.timer) - 5.5;
+      
       this.ball.position.x = this.model.graphData.getX(this.model.timer) / 10 - 5.5;
-      // this.ball.position.y = this.model.graphData.getY(this.model.timer) - 1.3;
-      // this.ball.position.y = this.model.graphData.getY(this.model.timer) - 3.6;
-      // this.ball.position.y = this.model.graphData.getY(this.model.timer) - 2.6;
-      // this.ball.position.y = this.model.graphData.getY(this.model.timer) - 2.35;
+      
       this.ball.position.y = this.model.graphData.getY(this.model.timer) / 10 - 3.05;
       if (this.ball.position.y === this.lastBallY) {
         this.model.startTest = true;
@@ -2057,19 +2025,12 @@ export class SimScreenView extends ScreenView {
         // this.ballTest.position.x = this.model.x -5.5;
         // this.ballTest.position.x = this.model.x -4.5;
         this.ballTest.position.x = this.model.xProp.value / 10 - 5.5;
-        // this.ballTest.position.y = this.model.y  -1.3;
-        // this.ballTest.position.y = this.model.y  -3.6;
-        // this.ballTest.position.y = this.model.y  -2.6;
-        // this.ballTest.position.y = this.model.yProp.value  -2.6;
-        // this.ballTest.position.y = this.model.yProp.value  -2.35;
+        
         this.ballTest.position.y = this.model.yProp.value / 10 - 3.05;
       } else {
         // this.ballTest.position.x = this.model.graphDataTest.getX(this.model.timerTest) - 5.5;
         this.ballTest.position.x = this.model.graphDataTest.getX(this.model.timerTest) / 10 - 5.5;
-        // this.ballTest.position.y = this.model.graphDataTest.getY(this.model.timerTest) - 1.3;
-        // this.ballTest.position.y = this.model.graphDataTest.getY(this.model.timerTest) - 3.6;
-        // this.ballTest.position.y = this.model.graphDataTest.getY(this.model.timerTest) - 2.6;
-        // this.ballTest.position.y = this.model.graphDataTest.getY(this.model.timerTest) - 2.35;
+        
         this.ballTest.position.y = this.model.graphDataTest.getY(this.model.timerTest) / 10 - 3.05;
       }
       // this.ballTest.position.x = this.model.graphDataTest.getX(this.model.timerTest) - 5.5;
@@ -2134,13 +2095,7 @@ export class SimScreenView extends ScreenView {
 
 
     } else {
-      // this.ball.position.x = this.model.graphData.getX(this.model.timer)  - 5.5;
-      // this.ball.position.y = this.model.graphData.getY(this.model.timer)  - 1.3;
-      // this.ballTest.position.x = this.model.graphDataTest.getX(this.model.timerTest)  - 5.5;
-      // this.ballTest.position.y = this.model.graphDataTest.getY(this.model.timerTest)  - 1.3;
-      // this.ball.position.x = this.model.x  - 5.5;
-      // this.ball.position.y = this.model.y  - 3.6;
-      // this.ball.position.x = this.model.x  - 4.5;
+
       this.ball.position.x = this.model.xProp.value - 5.5;
       // this.ball.position.y = this.model.y  - 2.6;
       // this.ball.position.y = this.model.yProp.value  - 2.35;
@@ -2159,6 +2114,7 @@ export class SimScreenView extends ScreenView {
       this.cannon.position.x = (this.ball.position.x + this.cannonDistance * Math.cos(thetaRadians));
       this.cannon.position.y = (this.ball.position.y + this.cannonDistance * Math.sin(thetaRadians));
       this.cannon.rotation.z = Math.atan2(this.ball.position.y - this.cannon.position.y, this.ball.position.x - this.cannon.position.x);
+      this.runner = true
 
 
 
