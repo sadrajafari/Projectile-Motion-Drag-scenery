@@ -100,7 +100,7 @@ export class SimScreenView extends ScreenView {
   ydotLatex: any;
   v_xdotLatex: any;
   v_ydotLatex: any;
-  private isRestoringRun: false;
+  private isRestoringRun: boolean = false;
   runner: boolean;
 
 
@@ -1761,7 +1761,7 @@ export class SimScreenView extends ScreenView {
   public restoreRun(): void {
     // Reset simulation without saving to history
     // this.pause = true
-
+    
     this.model.gravity = this.model.gravityProp.value;
     this.model.kl = this.model.klProp.value;
     this.model.kq = this.model.kqProp.value;
@@ -1778,15 +1778,16 @@ export class SimScreenView extends ScreenView {
 
 
 
-    this.runner = false;
-
-
     
-    this.spacePressed = true;
-    this.model.paused = false;
+    
+    this.runner = false;
+    
+    // this.spacePressed = true;
+    // this.model.paused = false;
     this.model.reset("Restore from history");
     this.reset();
-    this.model.paused = false;
+    // this.model.paused = false;
+    
 
 
 
