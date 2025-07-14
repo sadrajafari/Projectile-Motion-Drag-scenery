@@ -2,9 +2,12 @@ import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
 import { SimModel } from "../model/SimModel.js";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import { Rectangle, Text, Circle, Color, HBox, RichText, VBox, Display, Node, DOM } from "scenerystack/scenery";
-import { Panel, Range, HSlider, DerivedProperty, Vector2, RectangularToggleButton, Property, RoundToggleButton, ComboBox, VerticalAquaRadioButtonGroup, CarouselComboBox } from "scenerystack";
+import { Panel, Range, HSlider, DerivedProperty, Vector2, RectangularToggleButton, Property, RoundToggleButton, VerticalAquaRadioButtonGroup, CarouselComboBox } from "scenerystack";
+// @ts-ignore
 import EquationInput from './EquationInput.js';
+// @ts-ignore
 import { verifyEq } from '../../common/verifyEq.js';
+// @ts-ignore
 import { drawV_X, drawV_Y, drawX, drawY } from '../../common/makeGraphs.js';
 import * as THREE from 'three';
 
@@ -12,8 +15,8 @@ import * as THREE from 'three';
 
 export class SimScreenView extends ScreenView {
 
-  angle: number;
-  graphData: simData;
+  angle: number | undefined;
+  graphData: any;
   model: any;
   ballX: number;
   ballY: number;
@@ -28,11 +31,12 @@ export class SimScreenView extends ScreenView {
   refXGraph: any;
   refYGraph: any;
   domNode: any;
+  // @ts-ignore
   ballTest: import("c:/Users/kaden/phetsims/chipper/node_modules/@types/three/index").Mesh<import("c:/Users/kaden/phetsims/chipper/node_modules/@types/three/index").SphereGeometry, import("c:/Users/kaden/phetsims/chipper/node_modules/@types/three/index").MeshBasicMaterial>;
   lastBallY: any;
-  margin: { top: number; right: number; bottom: number; left: number; };
-  widthGraph: number;
-  heightGraph: number;
+  margin: { top: number; right: number; bottom: number; left: number; } | undefined;
+  widthGraph: number | undefined;
+  heightGraph: number | undefined;
   xScale: any;
   minXvx: any;
   maxXvx: any;
@@ -59,15 +63,25 @@ export class SimScreenView extends ScreenView {
   xScalevy: any;
   xScalevx: any;
   ballTrail: any;
+  // @ts-ignore
   scene: import("c:/Users/kaden/phetsims/chipper/node_modules/@types/three/index").Scene;
+  // @ts-ignore
   group: import("c:/Users/kaden/phetsims/chipper/node_modules/@types/three/index").Group;
+  // @ts-ignore
   path: import("c:/Users/kaden/phetsims/chipper/node_modules/@types/three/index").Path;
+  // @ts-ignore
   pathRef: import("c:/Users/kaden/phetsims/chipper/node_modules/@types/three/index").Path;
+  // @ts-ignore
   lineRef: import("c:/Users/kaden/phetsims/chipper/node_modules/@types/three/index").Line<import("c:/Users/kaden/phetsims/chipper/node_modules/@types/three/index").BufferGeometry, import("c:/Users/kaden/phetsims/chipper/node_modules/@types/three/index").LineBasicMaterial>;
+  // @ts-ignore
   pathTest: import("c:/Users/kaden/phetsims/chipper/node_modules/@types/three/index").Path;
+  // @ts-ignore
   lineTest: import("c:/Users/kaden/phetsims/chipper/node_modules/@types/three/index").Line<import("c:/Users/kaden/phetsims/chipper/node_modules/@types/three/index").BufferGeometry, import("c:/Users/kaden/phetsims/chipper/node_modules/@types/three/index").LineBasicMaterial>;
+  // @ts-ignore
   cannon: import("c:/Users/Sadra/Desktop/phetsims/chipper/node_modules/@types/three/index").Mesh<import("c:/Users/Sadra/Desktop/phetsims/chipper/node_modules/@types/three/index").PlaneGeometry, import("c:/Users/Sadra/Desktop/phetsims/chipper/node_modules/@types/three/index").MeshBasicMaterial>;
+  // @ts-ignore
   connector: import("c:/Users/Sadra/Desktop/phetsims/chipper/node_modules/@types/three/index").Mesh<import("c:/Users/Sadra/Desktop/phetsims/chipper/node_modules/@types/three/index").PlaneGeometry, import("c:/Users/Sadra/Desktop/phetsims/chipper/node_modules/@types/three/index").MeshBasicMaterial>;
+  // @ts-ignore
   rectangle: import("c:/Users/Sadra/Desktop/phetsims/chipper/node_modules/@types/three/index").Mesh<import("c:/Users/Sadra/Desktop/phetsims/chipper/node_modules/@types/three/index").PlaneGeometry, import("c:/Users/Sadra/Desktop/phetsims/chipper/node_modules/@types/three/index").MeshBasicMaterial>;
   cannonDistance: number;
   graphBox: Panel;
@@ -101,28 +115,14 @@ export class SimScreenView extends ScreenView {
   v_xdotLatex: any;
   v_ydotLatex: any;
   private isRestoringRun: boolean = false;
-  runner: boolean;
+  runner: boolean | undefined;
 
 
 
   public constructor(model: SimModel, options?: ScreenViewOptions) {
     super(options);
     this.runHistory = []; // Initialize run history
-    const resetAllButton = new ResetAllButton({
-      listener: () => {
-        this.interruptSubtreeInput(); // cancel interactions that may be in progress
-        model.reset();
-        this.reset();
-        vx = model.v_x
-        vy = model.v_y;
-        // ball.position.set(0.8, 0, 0)
-        isSpacePressed = false
-      },
-      // right: this.layoutBounds.maxX - ProjectileMotionDragConstants.SCREEN_VIEW_X_MARGIN,
-      // bottom: this.layoutBounds.maxY - ProjectileMotionDragConstants.SCREEN_VIEW_Y_MARGIN,
-
-    });
-    // this.addChild(resetAllButton);
+    
     this.model = model;
 
     this.layoutBounds.maxX = 1470;
@@ -190,7 +190,7 @@ export class SimScreenView extends ScreenView {
 
     // this.graphBox = new Panel(new VBox(), { opacity: 0.5 });
 
-    // this.graphBox.leftTop = new phet.dot.Vector2(1050, 10);
+    // this.graphBox.leftTop = new Vector2(1050, 10);
     // this.addChild(this.graphBox)
 
     // let posrefX = this.refXGraph.leftTop;
@@ -216,7 +216,7 @@ export class SimScreenView extends ScreenView {
       }),
       { opacity: 0.5 }
     );
-    this.graphBox.leftTop = new phet.dot.Vector2(1050, 10);
+    this.graphBox.leftTop = new Vector2(1050, 10);
     this.addChild(this.graphBox);
 
 
@@ -673,15 +673,15 @@ export class SimScreenView extends ScreenView {
     const referenceBall = new RichText("Reference")
     this.addChild(redBall)
     this.addChild(referenceBall)
-    redBall.leftTop = new phet.dot.Vector2(1100, 10)
-    referenceBall.leftTop = new phet.dot.Vector2(1120, 5)
+    redBall.leftTop = new Vector2(1100, 10)
+    referenceBall.leftTop = new Vector2(1120, 5)
 
     const blueBall = new Circle(7, { fill: new Color("blue") })
     const testBall = new RichText("Test")
     this.addChild(blueBall)
     this.addChild(testBall)
-    blueBall.leftTop = new phet.dot.Vector2(1250, 10)
-    testBall.leftTop = new phet.dot.Vector2(1270, 5)
+    blueBall.leftTop = new Vector2(1250, 10)
+    testBall.leftTop = new Vector2(1270, 5)
 
 
     const rootNode = new Node();
@@ -707,7 +707,7 @@ export class SimScreenView extends ScreenView {
 
     // Get the size (length, width, and height) of the bounding box
 
-    var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setClearColor(0x000000, 0);
     renderer.setClearAlpha(0);
     renderer.setSize(this.layoutBounds.maxX, this.layoutBounds.maxY);
@@ -727,6 +727,7 @@ export class SimScreenView extends ScreenView {
 
 
     // Load image directly into the material
+    
     var material = new THREE.MeshBasicMaterial({
       map: new THREE.TextureLoader().load('/src/screen-name/view/cannon.png'),
       transparent: true,
@@ -757,15 +758,14 @@ export class SimScreenView extends ScreenView {
     ];
 
     // Create a BufferGeometry
-    var geometry = new THREE.BufferGeometry().setFromPoints(vertices);
+    const geometry = new THREE.BufferGeometry().setFromPoints(vertices);
 
     // Define material for the line
-    var material2 = new THREE.LineBasicMaterial({ color: 0xff0000 });
+    const material2 = new THREE.LineBasicMaterial({ color: 0xff0000 });
 
     // Create the line
-    var line = new THREE.Line(geometry, material2);
-    // line.position.z = 0
-    // scene.add(line);
+    const line = new THREE.Line(geometry, material2);
+
     scene.add(cannon);
 
     this.cannon = cannon
@@ -773,21 +773,21 @@ export class SimScreenView extends ScreenView {
     // 
 
 
-    // Ellipse
-    var ellipseCurve = new THREE.EllipseCurve(
-      0, 0, // center
-      1, .2, // xRadius, yRadius
-      0, Math.PI * 2, // startAngle, endAngle
-      false, // clockwise
-      0 // rotation
-    );
+    // // Ellipse
+    // var ellipseCurve = new THREE.EllipseCurve(
+    //   0, 0, // center
+    //   1, .2, // xRadius, yRadius
+    //   0, Math.PI * 2, // startAngle, endAngle
+    //   false, // clockwise
+    //   0 // rotation
+    // );
 
-    // Create shape
-    var shape = new THREE.Shape(ellipseCurve.getPoints(50));
-    var geometry = new THREE.ShapeGeometry(shape);
-    var material = new THREE.MeshBasicMaterial({ color: "grey", transparent: false });
-    var ellipse = new THREE.Mesh(geometry, material);
-    ellipse.position.set(-4.9, -2.35, 0)
+    // // Create shape
+    // const shape = new THREE.Shape(ellipseCurve.getPoints(50));
+    // var geometry = new THREE.ShapeGeometry(shape);
+    // var material = new THREE.MeshBasicMaterial({ color: "grey", transparent: false });
+    // var ellipse = new THREE.Mesh(geometry, material);
+    // ellipse.position.set(-4.9, -2.35, 0)
 
 
 
@@ -795,7 +795,7 @@ export class SimScreenView extends ScreenView {
 
 
     // 
-    function createAxis(start, end, color) {
+    function createAxis(start: any, end: any, color: any) {
       const material = new THREE.LineBasicMaterial({ color: color });
       const points = [start, end];
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -854,7 +854,7 @@ export class SimScreenView extends ScreenView {
     // Load the font and add text labels
     const loader1 = new THREE.FontLoader();
     // const rect = new Rectangle(20, 120, 20, 10, {fill: new Color("blue")})
-    // rect.leftTop = new phet.dot.Vector2(300, 10)
+    // rect.leftTop = new Vector2(300, 10)
     // this.addChild(rect)
     loader1.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
       // function createLabel(text, position) {
@@ -869,7 +869,7 @@ export class SimScreenView extends ScreenView {
       //     mesh.position.copy(position);
       //     return mesh;
       // }
-      function createLabel(text, position) {
+      function createLabel(text: string, position: any) {
         // Create text geometry
         const textGeometry = new THREE.TextGeometry(text, {
           font: font,
@@ -921,6 +921,7 @@ export class SimScreenView extends ScreenView {
       // Add labels for X axis
       let x = -5.5
       for (let i = 0; i <= 40; ++i) {
+        // @ts-ignore
         scene.add(createLabel(`${i * 10}`, new THREE.Vector3(x, -3.55, 0)));
         x += 1
 
@@ -928,31 +929,13 @@ export class SimScreenView extends ScreenView {
 
       let y = -2
       for (let i = 1; i <= 7; ++i) {
+        // @ts-ignore
         scene.add(createLabel(`${i * 10}`, new THREE.Vector3(-5.9, y, 0)));
         y += 1
 
       }
 
-      // scene.add(createLabel('2', new THREE.Vector3(-2.55, -2.8, 0)));
-      // scene.add(createLabel('3', new THREE.Vector3(-1.55, -2.8, 0)));
-      // scene.add(createLabel('4', new THREE.Vector3(-0.55, -2.8, 0)));
-      // scene.add(createLabel('5', new THREE.Vector3(0.45, -2.8, 0)));
-      // scene.add(createLabel('6', new THREE.Vector3(1.45, -2.8, 0)));
-      // scene.add(createLabel('7', new THREE.Vector3(2.45, -2.8, 0)));
-      // scene.add(createLabel('8', new THREE.Vector3(3.45, -2.8, 0)));
-      // scene.add(createLabel('9', new THREE.Vector3(4.45, -2.8, 0)));
-      // scene.add(createLabel('10', new THREE.Vector3(5.45, -2.8, 0)));
-      // scene.add(createLabel('11', new THREE.Vector3(6.45, -2.8, 0)));
-      // scene.add(createLabel('12', new THREE.Vector3(7.45, -2.8, 0)));
-      // scene.add(createLabel('13', new THREE.Vector3(8.45, -2.8, 0)));
-
-      // Add labels for Y axis
-      // scene.add(createLabel('1', new THREE.Vector3(-4.9, -2, 0)));
-      // scene.add(createLabel('2', new THREE.Vector3(-4.9, -0.36, 0)));
-      // scene.add(createLabel('3', new THREE.Vector3(-4.9, 0.64, 0)));
-      // scene.add(createLabel('4', new THREE.Vector3(-4.9, 1.64, 0)));
-      // scene.add(createLabel('5', new THREE.Vector3(-4.9, 2.64, 0)));
-      // scene.add(createLabel('6', new THREE.Vector3(-4.9, 3.64, 0)));
+      
     });
 
 
@@ -1050,9 +1033,9 @@ export class SimScreenView extends ScreenView {
 
 
     // Manage layout
-    // domNode.leftTop = new phet.dot.Vector2(constantPanel.rightCenter.x + constantPanel.width / 4, 0);
-    // domNode.leftTop = new phet.dot.Vector2(constantPanel.rightTop.x + 10, 30);
-    domNode.leftTop = new phet.dot.Vector2(0, 0);
+    // domNode.leftTop = new Vector2(constantPanel.rightCenter.x + constantPanel.width / 4, 0);
+    // domNode.leftTop = new Vector2(constantPanel.rightTop.x + 10, 30);
+    domNode.leftTop = new Vector2(0, 0);
     const resizeListener = () => {
       // camera.aspect = window.innerWidth / window.innerHeight;
       // camera.aspect = window.innerWidth / window.innerHeight
@@ -1086,10 +1069,10 @@ export class SimScreenView extends ScreenView {
     const clock: THREE.Clock = new THREE.Clock();
     let actionStop = false;
 
-    // this.refXdotGraph.leftTop = new phet.dot.Vector2(domNode.rightTop.x + 200, 30);
-    // this.refYdotGraph.leftTop = new phet.dot.Vector2(this.refXdotGraph.rightBottom.x - 30, 30);
-    // this.refXGraph.leftTop = new phet.dot.Vector2(this.refXdotGraph.leftTop.x, this.refXdotGraph.leftTop.y+200);
-    // this.refYGraph.leftTop = new phet.dot.Vector2(this.refYdotGraph.leftTop.x, this.refYdotGraph.leftTop.y+200);
+    // this.refXdotGraph.leftTop = new Vector2(domNode.rightTop.x + 200, 30);
+    // this.refYdotGraph.leftTop = new Vector2(this.refXdotGraph.rightBottom.x - 30, 30);
+    // this.refXGraph.leftTop = new Vector2(this.refXdotGraph.leftTop.x, this.refXdotGraph.leftTop.y+200);
+    // this.refYGraph.leftTop = new Vector2(this.refYdotGraph.leftTop.x, this.refYdotGraph.leftTop.y+200);
 
     buttonMass.lazyLink(() => { model.massProp.value = Number(window.prompt("Enter value for mass:")); reset(); })
     buttonGravity.lazyLink(() => { model.gravityProp.value = Number(window.prompt("Enter value for gravity:")); reset(); })
@@ -1402,8 +1385,8 @@ export class SimScreenView extends ScreenView {
 
 
 
-    // constantPanel.leftTop = new phet.dot.Vector2(5, 10)
-    // speedPanel.leftTop = new phet.dot.Vector2(5, constantPanel.leftBottom.y + 10)
+    // constantPanel.leftTop = new Vector2(5, 10)
+    // speedPanel.leftTop = new Vector2(5, constantPanel.leftBottom.y + 10)
     // const quadratic = new Property<boolean>(true);
     // const dragToggle = new ToggleSwitch(quadratic, true, false)
     // quadratic.link(e => {
@@ -1471,10 +1454,10 @@ export class SimScreenView extends ScreenView {
 
 
     this.addChild(refEquationPanel)
-    constantPanel.leftTop = new phet.dot.Vector2(10, 0)
-    refEquationPanel.leftTop = new phet.dot.Vector2(10, constantPanel.leftBottom.y + 2)
-    testEquationPanel.leftTop = new phet.dot.Vector2(10, refEquationPanel.leftBottom.y + 2)
-    // equationPanel.leftTop = new phet.dot.Vector2(0, 0)
+    constantPanel.leftTop = new Vector2(10, 0)
+    refEquationPanel.leftTop = new Vector2(10, constantPanel.leftBottom.y + 2)
+    testEquationPanel.leftTop = new Vector2(10, refEquationPanel.leftBottom.y + 2)
+    // equationPanel.leftTop = new Vector2(0, 0)
 
     const resume = new Property<boolean>(false);
     const ResumeButton = new RectangularToggleButton(resume, false, true, { minWidth: 100, maxHeight: 25, content: new RichText('Run!'), baseColor: "#41b3d5" })
@@ -1495,9 +1478,9 @@ export class SimScreenView extends ScreenView {
       align: "center", children: [ResumeButton, new Rectangle(0, 0, 220, 0)]
     }), { fill: new Color("#d3d3d3"), minWidth: 277 })
     this.addChild(resetAndPausePanel)
-    // ResumeButton.leftTop = new phet.dot.Vector2(10, 100)
-    resetAndPausePanel.leftTop = new phet.dot.Vector2(testEquationPanel.leftBottom.x, testEquationPanel.leftBottom.y + 2)
-    // resetAndPausePanel.leftTop = new phet.dot.Vector2(equationPanel.width, equationPanel.leftBottom.y + 10)
+    // ResumeButton.leftTop = new Vector2(10, 100)
+    resetAndPausePanel.leftTop = new Vector2(testEquationPanel.leftBottom.x, testEquationPanel.leftBottom.y + 2)
+    // resetAndPausePanel.leftTop = new Vector2(equationPanel.width, equationPanel.leftBottom.y + 10)
 
 
 
@@ -1726,7 +1709,8 @@ export class SimScreenView extends ScreenView {
         })
       }
     }
-    window.addEventListener("pointerup" || "mouseup", () => {
+    
+    window.addEventListener("pointerup", () => {
       if (mouseDown) {
         mouseDown = false;
         cannon.rotation.z = model.angleProp.value * Math.PI / 180
@@ -1745,7 +1729,7 @@ export class SimScreenView extends ScreenView {
         } else if (action === 273) {
           reset("v0y")
         }
-        // reset()
+       
       }
     })
 
@@ -1849,6 +1833,7 @@ export class SimScreenView extends ScreenView {
 
       // Only add to history if settings are different
       if (isDifferent) {
+        // @ts-ignore
         this.runHistory.push(currentSettings);
 
         // Update ComboBox with new history
@@ -1924,7 +1909,7 @@ export class SimScreenView extends ScreenView {
     // console.log(this.refYGraph)
     // this.addChild(this.refYGraph);
     this.graphBox = new Panel(new Rectangle(0, 0, 400, 410), { opacity: 0.5 });
-    this.graphBox.leftTop = new phet.dot.Vector2(1040, 35);
+    this.graphBox.leftTop = new Vector2(1040, 35);
     this.addChild(this.graphBox)
 
     this.addChild(this.refXGraph);
@@ -1932,13 +1917,13 @@ export class SimScreenView extends ScreenView {
     this.addChild(this.refXdotGraph);
     this.addChild(this.refYdotGraph);
 
-    this.refXGraph.leftTop = new phet.dot.Vector2(1050, 40);
-    // this.refYGraph.leftTop = new phet.dot.Vector2(this.refXGraph.rightBottom.x - 30, 40);
-    this.refYGraph.leftTop = new phet.dot.Vector2(1240, 40);
-    // this.refXdotGraph.leftTop = new phet.dot.Vector2(this.refXGraph.leftTop.x, this.refXGraph.leftTop.y + 200);
-    this.refXdotGraph.leftTop = new phet.dot.Vector2(1050, 240);
-    // this.refYdotGraph.leftTop = new phet.dot.Vector2(this.refYGraph.leftTop.x, this.refYGraph.leftTop.y + 200);
-    this.refYdotGraph.leftTop = new phet.dot.Vector2(1240, 240);
+    this.refXGraph.leftTop = new Vector2(1050, 40);
+    // this.refYGraph.leftTop = new Vector2(this.refXGraph.rightBottom.x - 30, 40);
+    this.refYGraph.leftTop = new Vector2(1240, 40);
+    // this.refXdotGraph.leftTop = new Vector2(this.refXGraph.leftTop.x, this.refXGraph.leftTop.y + 200);
+    this.refXdotGraph.leftTop = new Vector2(1050, 240);
+    // this.refYdotGraph.leftTop = new Vector2(this.refYGraph.leftTop.x, this.refYGraph.leftTop.y + 200);
+    this.refYdotGraph.leftTop = new Vector2(1240, 240);
 
 
     this.refXGraph.element.children[9].setAttribute('cx', this.xScalex(0));

@@ -1,7 +1,11 @@
 import { Property } from 'scenerystack';
+// @ts-ignore
 import { simData } from '../../common/simData.js';
+// @ts-ignore
 import { getGraphData } from '../../common/rk4testing.js';
+// @ts-ignore
 import makeid from "../../common/randomStringGenerator.js"
+// @ts-ignore
 import post from '../../common/postData.js';
 
 export class SimModel {
@@ -23,8 +27,8 @@ export class SimModel {
   public v_x: number;
   public v_yProp: Property<number>;
   public v_y: number;
-  public xTest: number;
-  public yTest: number;
+  public xTest: number | undefined;
+  public yTest: number | undefined;
   public v_xTest: number;
   public v_yTest: number;
   public simSpeed: number;
@@ -36,11 +40,11 @@ export class SimModel {
   public height: number;
   public cannonPositionYProp: Property<number>
   public cannonPositionY: number;
-  public pillarHeightProp: Property<number>;
-  public pillarHeight: number;
+  
   public minAngle: number
   public minAngleProp: Property<number>
-  public action: any
+  
+  public action: any 
 
   private isUpdatingProperties = false;
   private resetTimeout: number | null = null;
@@ -74,7 +78,7 @@ export class SimModel {
   public updateSlider: boolean;
   quadraticDrag: boolean;
   public name: string | undefined | null;
-  public constructor(providedOptions: ProjectileMotionDragModelOptions) {
+  public constructor() {
     if (new URL(window.location.href).searchParams.get("name")) {
       this.name = new URL(window.location.href).searchParams.get("name");
     } else {
@@ -249,10 +253,13 @@ export class SimModel {
       this.v_yEQ = '-g-k_q\\cdot v_y\\cdot\\sqrt{v_x^2+v_y^2}'
       // this.v_xEQ = '-\\frac{k}{m}\\cdot v_x\\cdot\\sqrt{v_x^2+v_y^2}'
       // this.v_yEQ = '-g-\\frac{k}{m}\\cdot v_y\\cdot\\sqrt{v_x^2+v_y^2}'
-
+      // @ts-ignore
       this.xFunc = globalThis.window.evaluatex(this.xEQ, { k_q: this.kq, k_l: this.kl, m: this.mass, g: this.gravity }, { latex: true });
+      // @ts-ignore
       this.yFunc = globalThis.window.evaluatex(this.yEQ, { k_q: this.kq, k_l: this.kl, m: this.mass, g: this.gravity }, { latex: true });
+      // @ts-ignore
       this.v_xFunc = globalThis.window.evaluatex(this.v_xEQ, { k_q: this.kq, k_l: this.kl, m: this.mass, g: this.gravity }, { latex: true });
+      // @ts-ignore
       this.v_yFunc = globalThis.window.evaluatex(this.v_yEQ, { k_q: this.kq, k_l: this.kl, m: this.mass, g: this.gravity }, { latex: true });
 
       this.graphDataTest = getGraphData(this.quadraticDrag, this.graphUpdateInterval, this.x, this.y, this.y, angle, this.v_x, this.v_y, this.gravity, this.kl, this.kq, this.mass, { v_xdot: this.v_xFunc, v_yFunc: this.v_yEQ, xdot: this.xFunc, ydot: this.yFunc }, true, this.graphLen, this.graphDataTest, this.timer);
@@ -373,7 +380,7 @@ export class SimModel {
 
     }
     // console.log('angle: ', Math.atan2(this.v_y, this.v_x) * (180 / Math.PI))
-    var radius = .7;
+    
     this.x = 0
     this.y = 0 + this.yProp.value;
 
@@ -407,9 +414,13 @@ export class SimModel {
         this.graphDataTest.insert(0, 0, 0, 0, 0, 0, 0)
       } else {
         // console.log('VYYY:',this.v_yEQ)
+        // @ts-ignore
         this.xFunc = globalThis.window.evaluatex(this.xEQ, { k_q: this.kq, k_l: this.kl, m: this.mass, g: this.gravity }, { latex: true });
+        // @ts-ignore
         this.yFunc = globalThis.window.evaluatex(this.yEQ, { k_q: this.kq, k_l: this.kl, m: this.mass, g: this.gravity }, { latex: true });
+        // @ts-ignore
         this.v_xFunc = globalThis.window.evaluatex(this.v_xEQ, { k_q: this.kq, k_l: this.kl, m: this.mass, g: this.gravity }, { latex: true });
+        // @ts-ignore
         this.v_yFunc = globalThis.window.evaluatex(this.v_yEQ, { k_q: this.kq, k_l: this.kl, m: this.mass, g: this.gravity }, { latex: true });
         this.graphDataTest = getGraphData(this.quadraticDrag, this.graphUpdateInterval, this.x, this.y, this.y, angle, this.v_x, this.v_y, this.gravity, this.kl, this.kq, this.mass, { v_xdot: this.v_xFunc, v_ydot: this.v_yFunc, xdot: this.xFunc, ydot: this.yFunc }, true, this.graphLen, this.graphDataTest, this.timer);
       }
@@ -423,6 +434,7 @@ export class SimModel {
     this.graphLen = this.graphData.data.length * this.graphUpdateInterval;
 
     if (value_changed !== "") {
+      
       value_changed === "Start" ? this.action = "" : null
       setTimeout(() => post(this.name, value_changed, this.gravityProp.value, this.kProp.value, this.vProp.value, this.angleProp.value, this.yProp.value, this.v_xProp.value, this.v_yProp.value, this.xEQ, this.yEQ, this.v_xEQ, this.v_yEQ, this.quadraticDrag ? "Quadratic" : "Linear"), 10)
     }
