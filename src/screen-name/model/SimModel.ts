@@ -40,6 +40,8 @@ export class SimModel {
   public height: number;
   public cannonPositionYProp: Property<number>
   public cannonPositionY: number;
+  // public simSpeedProp: Property<number>;
+  // public simSpeed: number;
   
   public minAngle: number
   public minAngleProp: Property<number>
@@ -125,7 +127,7 @@ export class SimModel {
     this.k = 0.01;
     this.kq = 0.01;
     this.kl = 0.01;
-    this.simSpeed = 1.5;
+    this.simSpeed = 1;
 
     this.action = "start"
     // this.y = .5
@@ -146,7 +148,8 @@ export class SimModel {
     this.angleProp = new Property(this.angle)
     this.heightProp = new Property(this.height);
     this.cannonPositionYProp = new Property(this.cannonPositionY)
-    this.minAngleProp = new Property(this.minAngle)
+    this.minAngleProp = new Property(this.minAngle);
+
     // this.x = radius * Math.cos(Math.PI * 2 * (Math.atan2(this.v_y, this.v_x)* (180 / Math.PI)) / 360);
     // this.v_x = Math.cos(this.angle * (Math.PI / 180)) * this.v;
     // this.v_y = Math.sin(this.angle * (Math.PI / 180)) * this.v;
@@ -469,5 +472,6 @@ export class SimModel {
 
 
     }
+    
   }
 }
