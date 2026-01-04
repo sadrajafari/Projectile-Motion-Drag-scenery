@@ -24,6 +24,7 @@ import {
   RoundToggleButton,
   VerticalAquaRadioButtonGroup,
   CarouselComboBox,
+  RectangularPushButton,
 } from "scenerystack";
 // @ts-ignore
 import EquationInput from "./EquationInput.js";
@@ -143,6 +144,7 @@ export class SimScreenView extends ScreenView {
     v_xEQ: string;
     v_yEQ: string;
     dragType: "linear" | "quadratic";
+    
   }>;
   updateComboBox: (runs: { name: string; index: number }[] | string[]) => void;
   xdotField: any;
@@ -154,6 +156,7 @@ export class SimScreenView extends ScreenView {
   v_xdotLatex: any;
   v_ydotLatex: any;
   private isRestoringRun: boolean = false;
+  sliderUpdate: boolean = false;
   runner: boolean | undefined;
 
   public constructor(model: SimModel, options?: ScreenViewOptions) {
@@ -171,8 +174,9 @@ export class SimScreenView extends ScreenView {
     const resume = new Property<boolean>(false);
 
     const pauseSign = new Text("⏸︎", { fontSize: 25, maxWidth: 40 });
-    const pauseButton = new RoundToggleButton(pause, false, true, {
+    const pauseButton = new RectangularToggleButton(pause, false, true, {
       maxHeight: 100,
+      minWidth: 35,
       scale: 0.8,
       xAlign: "center",
       yAlign: "center",
@@ -182,8 +186,9 @@ export class SimScreenView extends ScreenView {
     // const ResumeButton = new RectangularToggleButton(resume, false, true, { minWidth: 140, maxHeight: 20, content: new RichText('▶'), baseColor: "#41b3d5" })
     const resumeSign = new Text("⏵︎", { fontSize: 25, maxWidth: 40 });
     // const ResumeButton = new RectangularToggleButton(resume, false, true, { minWidth: 140, maxHeight: 20, content: resumeSign, baseColor: "#41b3d5" })
-    const ResumeButton = new RoundToggleButton(resume, false, true, {
+    const ResumeButton = new RectangularToggleButton(resume, false, true, {
       maxHeight: 120,
+      minWidth: 35,
       scale: 0.8,
       xAlign: "center",
       yAlign: "center",
@@ -195,7 +200,22 @@ export class SimScreenView extends ScreenView {
 
     ResumeButton.visible = false;
 
-    const resetAllButton = new ResetAllButton({
+    // const resetAllButton = new ResetAllButton({
+    //   listener: () => {
+    //     this.interruptSubtreeInput();
+    //     reset((action = "Run"));
+    //     isSpacePressed = true;
+    //     this.spacePressed = true;
+    //     this.model.paused = false;
+    //     pauseButton.visible = true;
+    //     ResumeButton.visible = false;
+    //   },
+    //   right: this.layoutBounds.maxX - 10,
+    //   bottom: this.layoutBounds.maxY - 10,
+    // });
+
+    const resetAllButton = new RectangularPushButton({
+      content: new Text("⏮", { fontSize: 20, fill: "black" }),
       listener: () => {
         this.interruptSubtreeInput();
         reset((action = "Run"));
@@ -205,6 +225,8 @@ export class SimScreenView extends ScreenView {
         pauseButton.visible = true;
         ResumeButton.visible = false;
       },
+      minWidth: 35,
+      minHeight: 35,
       right: this.layoutBounds.maxX - 10,
       bottom: this.layoutBounds.maxY - 10,
     });
@@ -1441,14 +1463,16 @@ export class SimScreenView extends ScreenView {
       cannon.rotation.z = (model.angleProp.value * Math.PI) / 180;
       model.angleProp.value = (cannon.rotation.z * 180) / Math.PI;
 
-      this.spacePressed = false;
       model.reset(action);
       this.reset(action);
       vx = model.v_x;
       vy = model.v_y;
-
+      
       // ball.position.set(-5.3, -3.1, 0)
+      this.spacePressed = false;
       isSpacePressed = false;
+      pauseButton.visible = false;
+      ResumeButton.visible = true;
     };
     reset("Start");
     //
@@ -1701,18 +1725,29 @@ export class SimScreenView extends ScreenView {
     simSpeedText.scale(0.8);
     simSpeedSlider.scale(0.7);
     speedAmount.scale(0.8);
-    resetAllButton.scale(0.73);
+    resetAllButton.scale(0.8);
+
+    reset("Run");
 
     pause.lazyLink((e) => {
       this.model.paused = !this.model.paused;
       pauseButton.visible = !pauseButton.visible;
       ResumeButton.visible = !ResumeButton.visible;
     });
+    pauseButton.visible = false;
+    ResumeButton.visible = true;
+
     resume.lazyLink((e) => {
+      if (this.sliderUpdate){
+        this.spacePressed = true;
+        this.sliderUpdate = false;
+      }
       this.model.paused = !this.model.paused;
       pauseButton.visible = !pauseButton.visible;
       ResumeButton.visible = !ResumeButton.visible;
     });
+    isSpacePressed = true;
+    this.spacePressed = true;
 
     const simSpeedToggleButton = new RoundToggleButton(
       buttonSimSpeed,
@@ -1738,11 +1773,11 @@ export class SimScreenView extends ScreenView {
           new Rectangle(0, 0, 6, 0),
           simSpeedToggleButton,
           new Rectangle(0, 0, 10, 0),
-          pauseButton,
-          ResumeButton,
+          resetAllButton,
           // RunButton,
           new Rectangle(0, 0, 5, 0),
-          resetAllButton,
+          pauseButton,
+          ResumeButton,
           // new Rectangle(0, 0, 220, 0),
         ],
       }),
@@ -1833,6 +1868,8 @@ export class SimScreenView extends ScreenView {
         isSpacePressed = true;
         this.spacePressed = true;
         model.paused = false;
+        pauseButton.visible = true;
+        ResumeButton.visible = false;
       }
       if (event.key === "ArrowUp") {
         // Increase the x position of the cubeMesh
@@ -1985,6 +2022,8 @@ export class SimScreenView extends ScreenView {
         } else if (action === 273) {
           reset("v0y");
         }
+        reset("update-slider")
+        this.sliderUpdate = true;
       }
     });
   }
@@ -2043,7 +2082,7 @@ export class SimScreenView extends ScreenView {
       dragType: this.model.quadraticDrag ? "quadratic" : "linear",
     };
 
-    if (action === "Run") {
+    if (action === "Run" || action === "update-slider") {
       // Check if settings are different from last run
       const lastRun = this.runHistory[this.runHistory.length - 1];
       const isDifferent =
@@ -2289,7 +2328,7 @@ export class SimScreenView extends ScreenView {
           this.model.graphData.getY(this.model.timer) / 10 - 3.05;
         if (this.ball.position.y === this.lastBallY) {
           this.model.startTest = true;
-          console.log(this.model.timer);
+          // console.log(this.model.timer);
         }
         this.lastBallY = this.ball.position.y;
       }
