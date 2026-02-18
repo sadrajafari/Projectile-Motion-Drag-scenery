@@ -33,6 +33,9 @@ import { verifyEq } from "../../common/verifyEq.js";
 // @ts-ignore
 import { drawV_X, drawV_Y, drawX, drawY } from "../../common/makeGraphs.js";
 import * as THREE from "three";
+import HelpDialog from "./HelpDialog.js";
+// @ts-ignore
+import { questionButton } from "./questionSign.js";
 
 export class SimScreenView extends ScreenView {
   angle: number | undefined;
@@ -144,7 +147,6 @@ export class SimScreenView extends ScreenView {
     v_xEQ: string;
     v_yEQ: string;
     dragType: "linear" | "quadratic";
-    
   }>;
   updateComboBox: (runs: { name: string; index: number }[] | string[]) => void;
   xdotField: any;
@@ -1467,7 +1469,7 @@ export class SimScreenView extends ScreenView {
       this.reset(action);
       vx = model.v_x;
       vy = model.v_y;
-      
+
       // ball.position.set(-5.3, -3.1, 0)
       this.spacePressed = false;
       isSpacePressed = false;
@@ -1582,12 +1584,45 @@ export class SimScreenView extends ScreenView {
     // });
 
     //
+    // Info button for equation help
+    const fillEquationsCallback = (equations: { xEQ: string; yEQ: string; v_xEQ: string; v_yEQ: string }) => {
+      this.xdotLatex = equations.xEQ;
+      this.ydotLatex = equations.yEQ;
+      this.v_xdotLatex = equations.v_xEQ;
+      this.v_ydotLatex = equations.v_yEQ;
+
+      xdotField.mathField.latex(equations.xEQ);
+      ydotField.mathField.latex(equations.yEQ);
+      v_xdotField.mathField.latex(equations.v_xEQ);
+      v_ydotField.mathField.latex(equations.v_yEQ);
+
+      model.xEQ = equations.xEQ;
+      model.yEQ = equations.yEQ;
+      model.v_xEQ = equations.v_xEQ;
+      model.v_yEQ = equations.v_yEQ;
+    };
+
+    const helpDialog = new HelpDialog(this.tandem, fillEquationsCallback);
+
+    const questionNode = questionButton();
+
+    // const helpDialog = new HelpDialog(undefined as any);
+
+    questionNode.addInputListener({
+      down: () => {
+        helpDialog.show();
+      },
+    });
 
     const testEquationPanel = new Panel(
       new VBox({
         align: "center",
         children: [
-          new Text("Test Equations", { fontSize: 19 }),
+          new HBox({
+            align: "center",
+            children: [new Text("Test Equations", { fontSize: 19 }), new Rectangle(0, 0, 10, 10), questionNode],
+          }),
+          
           new Rectangle(0, 0, 350, 15),
 
           // new HBox({ align: "center", children: [xdotLabel, xdotBox] }),
@@ -1738,7 +1773,7 @@ export class SimScreenView extends ScreenView {
     ResumeButton.visible = true;
 
     resume.lazyLink((e) => {
-      if (this.sliderUpdate){
+      if (this.sliderUpdate) {
         this.spacePressed = true;
         this.sliderUpdate = false;
       }
@@ -2022,7 +2057,7 @@ export class SimScreenView extends ScreenView {
         } else if (action === 273) {
           reset("v0y");
         }
-        reset("update-slider")
+        reset("update-slider");
         this.sliderUpdate = true;
       }
     });
